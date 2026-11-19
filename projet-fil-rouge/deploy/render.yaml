@@ -1,0 +1,17 @@
+# Blueprint Render (alternative gratuite pour l'API, plan Free : mise en veille après
+# 15 min d'inactivité, redémarrage en 30 à 60 s). Depuis le tableau de bord Render :
+# New → Blueprint → choisir le dépôt → Render lit ce fichier.
+# Vérifiez les conditions du plan gratuit (carte bancaire, quotas) avant la séance.
+services:
+  - type: web
+    name: diabetes-api
+    runtime: docker
+    plan: free
+    dockerfilePath: ./docker/api.Dockerfile
+    dockerContext: .
+    healthCheckPath: /health
+    envVars:
+      - key: MODEL_PATH
+        value: /app/models/model.joblib
+      - key: THRESHOLD
+        value: "0.5"

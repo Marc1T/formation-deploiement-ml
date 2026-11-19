@@ -1,0 +1,162 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 240" width="1200" height="240" class="dg dg-ci-pipeline" role="img" aria-labelledby="dg-ci-pipeline-t dg-ci-pipeline-d">
+<title id="dg-ci-pipeline-t">Intégration continue : du push à l’image publiée</title>
+<desc id="dg-ci-pipeline-d">Un push déclenche lint et tests ; s’ils passent, le modèle est entraîné, l’image construite et publiée sur ghcr.io.</desc>
+
+  <style>
+    .dg-ci-pipeline {
+      --bg:#F4F6F9; --surface:#FFFFFF; --surface2:#E9EDF3; --fg:#17202B; --muted:#5D6B7D;
+      --line:#D3DAE4; --line2:#B9C3D1; --accent:#0E6E8E; --accent2:#D9731A; --ok:#1D8F5A; --err:#C73E3E;
+      --data:#6D4FD3; --code:#0E6E8E; --infra:#1D8F5A; --user:#B8471B; --ai:#B5338A; --neutral:#8B97A8;
+      --nodefg:#FFFFFF; --ghostfg:#17202B;
+      font-family: Inter, "Segoe UI", system-ui, sans-serif;
+    }
+    @media (prefers-color-scheme: dark) {
+      .dg-ci-pipeline {
+        --bg:#0D141D; --surface:#141D29; --surface2:#1B2634; --fg:#E7ECF3; --muted:#9AA9BB;
+        --line:#2B3A4C; --line2:#3C4D62; --accent:#4FB3D9; --accent2:#F0A050; --ok:#3FC27F; --err:#F26B6B;
+        --data:#A08BF0; --code:#4FB3D9; --infra:#3FC27F; --user:#F08A5B; --ai:#E27AC0; --neutral:#6B7A8C;
+        --nodefg:#0D141D; --ghostfg:#E7ECF3;
+      }
+    }
+    .dg-ci-pipeline .bg { fill: var(--bg); }
+    .dg-ci-pipeline text { fill: var(--fg); }
+    .dg-ci-pipeline .muted { fill: var(--muted); }
+    .dg-ci-pipeline .label { fill: var(--nodefg); font-weight: 600; }
+    .dg-ci-pipeline .sublabel { fill: var(--nodefg); opacity: .85; }
+    .dg-ci-pipeline .ghost .box { fill: var(--surface); stroke: var(--line2); stroke-dasharray: 6 5; stroke-width: 1.6; }
+    .dg-ci-pipeline .ghost .label, .dg-ci-pipeline .ghost .sublabel { fill: var(--ghostfg); }
+    .dg-ci-pipeline .ghost .ic { color: var(--muted); }
+    .dg-ci-pipeline .ic { color: var(--nodefg); }
+    .dg-ci-pipeline .group { fill: var(--surface); stroke: var(--line); stroke-width: 1.5; }
+    .dg-ci-pipeline .group.dashed { fill: none; stroke: var(--line2); stroke-dasharray: 7 6; }
+    .dg-ci-pipeline .group.tint-data { fill: color-mix(in srgb, var(--data) 8%, var(--surface)); }
+    .dg-ci-pipeline .group.tint-infra { fill: color-mix(in srgb, var(--infra) 8%, var(--surface)); }
+    .dg-ci-pipeline .group.tint-user { fill: color-mix(in srgb, var(--user) 8%, var(--surface)); }
+    .dg-ci-pipeline .group.tint-code { fill: color-mix(in srgb, var(--code) 8%, var(--surface)); }
+    .dg-ci-pipeline .group.tint-ai { fill: color-mix(in srgb, var(--ai) 8%, var(--surface)); }
+    .dg-ci-pipeline .group-title { fill: var(--muted); font-size: 11px; font-weight: 600; letter-spacing: .08em; text-transform: uppercase; }
+    .dg-ci-pipeline .edge { fill: none; stroke: var(--muted); stroke-width: 2.4; stroke-linecap: round; }
+    .dg-ci-pipeline .edge.thin { stroke-width: 1.6; }
+    .dg-ci-pipeline .edge.dashed { stroke-dasharray: 6 6; }
+    .dg-ci-pipeline .edge.flow { stroke-dasharray: 9 8; animation: dg-ci-pipeline-flow 1.1s linear infinite; }
+    .dg-ci-pipeline .edge.slow { animation-duration: 2.2s; }
+    .dg-ci-pipeline .edge.accent { stroke: var(--accent); }
+    .dg-ci-pipeline .edge.warn { stroke: var(--accent2); }
+    .dg-ci-pipeline .edge.ok { stroke: var(--ok); }
+    .dg-ci-pipeline .edge.err { stroke: var(--err); }
+    .dg-ci-pipeline .edge.data { stroke: var(--data); }
+    .dg-ci-pipeline .edge.ai { stroke: var(--ai); }
+    .dg-ci-pipeline .edge.lifeline { stroke: var(--line2); stroke-width: 1.5; stroke-dasharray: 4 5; }
+    .dg-ci-pipeline .arrow { fill: var(--muted); }
+    .dg-ci-pipeline .arrow.accent { fill: var(--accent); } .dg-ci-pipeline .arrow.warn { fill: var(--accent2); }
+    .dg-ci-pipeline .arrow.ok { fill: var(--ok); } .dg-ci-pipeline .arrow.err { fill: var(--err); }
+    .dg-ci-pipeline .arrow.data { fill: var(--data); } .dg-ci-pipeline .arrow.ai { fill: var(--ai); }
+    .dg-ci-pipeline .edge-label { fill: var(--muted); font-size: 11.5px; font-family: "JetBrains Mono", Consolas, monospace; }
+    .dg-ci-pipeline .edge-label.fg { fill: var(--fg); }
+    .dg-ci-pipeline .edge-label-bg { fill: var(--bg); }
+    .dg-ci-pipeline .badge-done { fill: var(--ok); } .dg-ci-pipeline .badge-err { fill: var(--err); } .dg-ci-pipeline .badge-run { fill: var(--accent2); }
+    .dg-ci-pipeline .badge-ic { color: #fff; }
+    .dg-ci-pipeline .note { fill: var(--muted); font-size: 12px; }
+    .dg-ci-pipeline .fg { fill: var(--fg); }
+    .dg-ci-pipeline .strong { font-weight: 600; }
+    .dg-ci-pipeline .title { fill: var(--fg); font-size: 15px; font-weight: 600; }
+    .dg-ci-pipeline .small { font-size: 11px; }
+    .dg-ci-pipeline .pill { fill: var(--surface2); }
+    .dg-ci-pipeline .pill-text { fill: var(--fg); font-size: 11.5px; font-weight: 600; }
+    .dg-ci-pipeline .pill.user { fill: var(--user); } .dg-ci-pipeline .pill.infra { fill: var(--infra); }
+    .dg-ci-pipeline .pill.user .pill-text, .dg-ci-pipeline .pill.infra .pill-text { fill: var(--nodefg); }
+    .dg-ci-pipeline .cross { stroke: var(--err); stroke-width: 3; stroke-linecap: round; }
+    @keyframes dg-ci-pipeline-flow { to { stroke-dashoffset: -34; } }
+    @media (prefers-reduced-motion: reduce) { .dg-ci-pipeline .edge.flow { animation: none; } }
+  </style>
+<defs>
+<marker id="dg-ci-pipeline-arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0 0 L10 5 L0 10 z" class="arrow "/></marker>
+<symbol id="dg-ci-pipeline-i-check" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="m5 12 5 5L20 7"/></symbol>
+<symbol id="dg-ci-pipeline-i-cross" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M6 6l12 12M18 6 6 18"/></symbol>
+<symbol id="dg-ci-pipeline-i-refresh" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M20 11a8 8 0 0 0-14.5-4.5L3 9M4 13a8 8 0 0 0 14.5 4.5L21 15"/><path d="M3 4v5h5M21 20v-5h-5"/></symbol>
+<symbol id="dg-ci-pipeline-i-user" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="4"/><path d="M4 21c0-4 3.6-7 8-7s8 3 8 7"/></symbol>
+<symbol id="dg-ci-pipeline-i-branch" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="6" cy="5" r="2.2"/><circle cx="6" cy="19" r="2.2"/><circle cx="18" cy="8" r="2.2"/><path d="M6 7.2v9.6M18 10.2c0 4-4 5-8 5.5"/></symbol>
+<symbol id="dg-ci-pipeline-i-flask" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M9 3h6M10 3v6l-5 9a2 2 0 0 0 1.7 3h10.6A2 2 0 0 0 19 18l-5-9V3"/><path d="M7.5 15h9"/></symbol>
+<symbol id="dg-ci-pipeline-i-gear" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M12 2v3M12 19v3M2 12h3M19 12h3M4.9 4.9l2.1 2.1M17 17l2.1 2.1M4.9 19.1 7 17M17 7l2.1-2.1"/></symbol>
+<symbol id="dg-ci-pipeline-i-layers" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="m12 3 9 5-9 5-9-5 9-5Z"/><path d="m3 13 9 5 9-5M3 17l9 5 9-5"/></symbol>
+<symbol id="dg-ci-pipeline-i-package" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M20 7 12 3 4 7v10l8 4 8-4V7Z"/><path d="M4 7l8 4 8-4M12 11v10M8 5l8 4"/></symbol>
+<symbol id="dg-ci-pipeline-i-cloud" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M7 18a4 4 0 0 1-.6-7.95A6 6 0 0 1 18 9a4.5 4.5 0 0 1-.5 9H7Z"/></symbol>
+</defs>
+<rect class="bg" width="1200" height="240" rx="18"/>
+<g class="grp">
+<rect class="group  tint-code" x="340" y="36" width="270" height="140" rx="16"/>
+<text class="group-title" x="354" y="56">job qualité</text>
+</g>
+<g class="grp">
+<rect class="group  tint-infra" x="640" y="36" width="400" height="140" rx="16"/>
+<text class="group-title" x="654" y="56">job image</text>
+</g>
+<path class="edge flow" d="M150 108 C168 108, 168 108, 186 108" marker-end="url(#dg-ci-pipeline-arrow)"/>
+<rect class="edge-label-bg" x="150.2" y="58" width="39.6" height="16" rx="4"/>
+<text class="edge-label " x="170" y="70" text-anchor="middle">push</text>
+<path class="edge flow" d="M310 108 C333 108, 333 108, 356 108" marker-end="url(#dg-ci-pipeline-arrow)"/>
+<rect class="edge-label-bg" x="301.4" y="58" width="67.2" height="16" rx="4"/>
+<text class="edge-label " x="335" y="70" text-anchor="middle">on: push</text>
+<path class="edge flow" d="M470 108 C478 108, 478 108, 486 108" marker-end="url(#dg-ci-pipeline-arrow)"/>
+<path class="edge flow" d="M600 108 C628 108, 628 108, 656 108" marker-end="url(#dg-ci-pipeline-arrow)"/>
+<rect class="edge-label-bg" x="606.75" y="58" width="46.5" height="16" rx="4"/>
+<text class="edge-label " x="630" y="70" text-anchor="middle">needs</text>
+<path class="edge flow" d="M770 108 C778 108, 778 108, 786 108" marker-end="url(#dg-ci-pipeline-arrow)"/>
+<path class="edge flow" d="M900 108 C908 108, 908 108, 916 108" marker-end="url(#dg-ci-pipeline-arrow)"/>
+<path class="edge dashed" d="M1030 108 C1048 108, 1048 108, 1066 108" marker-end="url(#dg-ci-pipeline-arrow)"/>
+<rect class="edge-label-bg" x="988.8" y="150" width="122.4" height="16" rx="4"/>
+<text class="edge-label " x="1050" y="162" text-anchor="middle">deploy-azure.yml</text>
+<g class="node " data-id="dev">
+<rect class="box" fill="var(--user)" x="30" y="80" width="120" height="56" rx="12"/>
+<use class="ic" href="#dg-ci-pipeline-i-user" x="44" y="96" width="24" height="24"/>
+<text class="label" x="78" y="106" font-size="14">Dev</text>
+<text class="sublabel" x="78" y="121" font-size="11">git push</text>
+</g>
+<g class="node " data-id="gh">
+<rect class="box" fill="var(--neutral)" x="190" y="80" width="120" height="56" rx="12"/>
+<use class="ic" href="#dg-ci-pipeline-i-branch" x="204" y="96" width="24" height="24"/>
+<text class="label" x="238" y="106" font-size="14">GitHub</text>
+<text class="sublabel" x="238" y="121" font-size="11">main</text>
+</g>
+<g class="node " data-id="ruff">
+<rect class="box" fill="var(--code)" x="360" y="80" width="110" height="56" rx="12"/>
+<use class="ic" href="#dg-ci-pipeline-i-check" x="374" y="96" width="24" height="24"/>
+<text class="label" x="408" y="106" font-size="14">ruff</text>
+<text class="sublabel" x="408" y="121" font-size="11">lint</text>
+<circle class="badge-done" cx="468" cy="82" r="10" stroke="var(--bg)" stroke-width="2.5"/>
+<use class="badge-ic" href="#dg-ci-pipeline-i-check" x="461.5" y="75.5" width="13" height="13"/>
+</g>
+<g class="node " data-id="pytest">
+<rect class="box" fill="var(--code)" x="490" y="80" width="110" height="56" rx="12"/>
+<use class="ic" href="#dg-ci-pipeline-i-flask" x="504" y="96" width="24" height="24"/>
+<text class="label" x="538" y="106" font-size="14">pytest</text>
+<text class="sublabel" x="538" y="121" font-size="11">tests</text>
+<circle class="badge-done" cx="598" cy="82" r="10" stroke="var(--bg)" stroke-width="2.5"/>
+<use class="badge-ic" href="#dg-ci-pipeline-i-check" x="591.5" y="75.5" width="13" height="13"/>
+</g>
+<g class="node " data-id="repro">
+<rect class="box" fill="var(--code)" x="660" y="80" width="110" height="56" rx="12"/>
+<use class="ic" href="#dg-ci-pipeline-i-gear" x="674" y="96" width="24" height="24"/>
+<text class="label" x="708" y="106" font-size="13">dvc repro</text>
+<text class="sublabel" x="708" y="120" font-size="10">modèle</text>
+</g>
+<g class="node " data-id="build">
+<rect class="box" fill="var(--infra)" x="790" y="80" width="110" height="56" rx="12"/>
+<use class="ic" href="#dg-ci-pipeline-i-layers" x="804" y="96" width="24" height="24"/>
+<text class="label" x="838" y="106" font-size="14">build</text>
+<text class="sublabel" x="838" y="121" font-size="11">Dockerfile</text>
+</g>
+<g class="node " data-id="push">
+<rect class="box" fill="var(--infra)" x="920" y="80" width="110" height="56" rx="12"/>
+<use class="ic" href="#dg-ci-pipeline-i-package" x="934" y="96" width="24" height="24"/>
+<text class="label" x="968" y="106" font-size="14">push</text>
+<text class="sublabel" x="968" y="121" font-size="11">ghcr.io</text>
+</g>
+<g class="node ghost" data-id="cloud">
+<rect class="box"  x="1070" y="80" width="110" height="56" rx="12"/>
+<use class="ic" href="#dg-ci-pipeline-i-cloud" x="1084" y="96" width="24" height="24"/>
+<text class="label" x="1118" y="106" font-size="12">Container App</text>
+<text class="sublabel" x="1118" y="119" font-size="9">à la demande</text>
+</g>
+<text class="note" x="600" y="222" text-anchor="middle" font-size="12">Chaque étape bloque la suivante : une image n’est publiée que si le lint et les tests passent.</text>
+</svg>

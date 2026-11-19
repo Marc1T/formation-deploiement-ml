@@ -1,0 +1,23 @@
+# Paramètres du pipeline (lus par DVC et par le code).
+# Modifier une valeur puis `uv run dvc repro` ne relance que les étapes concernées.
+
+data:
+  raw_path: data/raw/diabetes.csv
+  processed_dir: data/processed
+  test_size: 0.2
+  random_state: 42
+
+train:
+  model: random_forest        # random_forest | logistic_regression
+  n_estimators: 200           # random_forest
+  max_depth: 6                # random_forest
+  C: 1.0                      # logistic_regression
+  model_dir: models
+
+evaluate:
+  threshold: 0.5
+  reports_dir: reports
+
+mlflow:
+  experiment: diabetes-risk
+  tracking_uri: sqlite:///mlflow.db   # surchargé par la variable d'environnement MLFLOW_TRACKING_URI

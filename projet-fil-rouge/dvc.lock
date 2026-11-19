@@ -1,0 +1,97 @@
+schema: '2.0'
+stages:
+  prepare:
+    cmd: python -m diabetes_ml.data
+    deps:
+    - path: data/raw/diabetes.csv
+      hash: md5
+      md5: 521ac9eeeafc8acc452b05815e287e2c
+      size: 23371
+    - path: src/diabetes_ml/data.py
+      hash: md5
+      md5: 9fd0177754fb670557405731d8dee217
+      size: 2067
+    params:
+      params.yaml:
+        data:
+          raw_path: data/raw/diabetes.csv
+          processed_dir: data/processed
+          test_size: 0.2
+          random_state: 42
+    outs:
+    - path: data/processed/test.csv
+      hash: md5
+      md5: ced34681d5d37448708100a099189244
+      size: 5664
+    - path: data/processed/train.csv
+      hash: md5
+      md5: c4649437b7f3436c9e4587ae72a5e835
+      size: 22671
+  train:
+    cmd: python -m diabetes_ml.train
+    deps:
+    - path: data/processed/train.csv
+      hash: md5
+      md5: c4649437b7f3436c9e4587ae72a5e835
+      size: 22671
+    - path: src/diabetes_ml/data.py
+      hash: md5
+      md5: 9fd0177754fb670557405731d8dee217
+      size: 2067
+    - path: src/diabetes_ml/train.py
+      hash: md5
+      md5: 40db76417178a49dcb642cb67efc8f9b
+      size: 2323
+    params:
+      params.yaml:
+        mlflow:
+          experiment: diabetes-risk
+          tracking_uri: sqlite:///mlflow.db
+        train:
+          model: random_forest
+          n_estimators: 200
+          max_depth: 6
+          C: 1.0
+          model_dir: models
+    outs:
+    - path: models/model.joblib
+      hash: md5
+      md5: 73a5ae2ce99e8a165cc804f1fb0c0271
+      size: 1176514
+    - path: models/model_info.json
+      hash: md5
+      md5: e93bfe304fa34d65705d508a07ede3ee
+      size: 494
+  evaluate:
+    cmd: python -m diabetes_ml.evaluate
+    deps:
+    - path: data/processed/test.csv
+      hash: md5
+      md5: ced34681d5d37448708100a099189244
+      size: 5664
+    - path: models/model.joblib
+      hash: md5
+      md5: 73a5ae2ce99e8a165cc804f1fb0c0271
+      size: 1176514
+    - path: models/model_info.json
+      hash: md5
+      md5: e93bfe304fa34d65705d508a07ede3ee
+      size: 494
+    - path: src/diabetes_ml/evaluate.py
+      hash: md5
+      md5: 5386db059a727efcce0cb8c53941affb
+      size: 2649
+    params:
+      params.yaml:
+        evaluate:
+          threshold: 0.5
+          reports_dir: reports
+    outs:
+    - path: reports/confusion_matrix.csv
+      hash: md5
+      md5: 7659202cbf5c6462ffbab26981542d55
+      size: 56
+    - path: reports/metrics.json
+      hash: md5
+      md5: 3ff975f0d1d9c453f8cdcf1152538afe
+      size: 209

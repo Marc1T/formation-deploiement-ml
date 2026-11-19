@@ -1,0 +1,542 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Séance 3 · Mise en production dans le cloud</title>
+<meta name="description" content="Formation Déployer un modèle ML et un site web · Séance 3 : Streamlit Cloud, Azure, Google Cloud, Vertex AI, AI Studio">
+<link rel="stylesheet" href="../assets/css/fonts.css">
+<link rel="stylesheet" href="../assets/vendor/reveal.js/dist/reset.css">
+<link rel="stylesheet" href="../assets/vendor/reveal.js/dist/reveal.css">
+<link rel="stylesheet" href="../assets/css/theme.css">
+<link rel="stylesheet" href="../assets/css/animations.css">
+<link rel="stylesheet" href="../assets/css/print.css">
+</head>
+<body>
+<div class="reveal">
+<div class="slides">
+
+<!-- ============================================================ Titre -->
+<section class="title-slide">
+  <p class="eyebrow">Déployer un modèle ML et un site web · Séance 3 / 3</p>
+  <h1>Mise en production dans le cloud</h1>
+  <p class="subtitle">Streamlit Community Cloud, Azure Container Apps, Cloud Run, un tour d'Azure ML et de Vertex AI, et Gemini branché proprement dans l'application.</p>
+  <div class="meta">
+    <span><i data-icon="clock"></i> 3 heures</span>
+    <span><i data-icon="flask"></i> 4 labs (dont 1 optionnel)</span>
+    <span><i data-icon="user"></i> Cellule Info CEAM</span>
+  </div>
+  <div class="pipeline" data-fragments="false" data-compact="true" data-steps='[
+    {"label":"Image testée","icon":"package","kind":"infra","state":"done"},
+    {"label":"Streamlit Cloud","icon":"globe","kind":"user"},
+    {"label":"Azure","icon":"cloud","kind":"infra"},
+    {"label":"Google Cloud","icon":"cloud","kind":"infra"},
+    {"label":"Gemini","icon":"sparkle","kind":"ai"}]'></div>
+</section>
+
+<section>
+  <p class="eyebrow">Où en est-on ?</p>
+  <h2>Un artefact prêt à être mis en ligne</h2>
+  <div class="cols cols-3">
+    <div class="card" data-kind="infra"><h3><i data-icon="package"></i> Une image Docker</h3><p>Construite et publiée par la CI : <code>ghcr.io/&lt;vous&gt;/&lt;depot&gt;/api:latest</code>, testée, configurable par variables.</p></div>
+    <div class="card" data-kind="user"><h3><i data-icon="globe"></i> Une application Streamlit</h3><p>Mode local ou mode API selon <code>API_URL</code>.</p></div>
+    <div class="card" data-kind="data"><h3><i data-icon="database"></i> Un pipeline reproductible</h3><p>uv, DVC, MLflow : le modèle peut être régénéré et comparé.</p></div>
+  </div>
+  <div class="callout mt fragment"><i data-icon="rocket"></i><p><strong>Aujourd'hui</strong> : tout le monde met l'application en ligne gratuitement, puis l'API sur Azure. On situe les plateformes ML managées (Azure ML, Vertex AI) et on ajoute une brique d'IA générative sans exposer de clé.</p></div>
+</section>
+
+<!-- ============================================================ 01 Panorama -->
+<section class="section-slide">
+  <div class="num">01</div>
+  <div>
+    <p class="eyebrow">Partie 1</p>
+    <h2>Panorama du cloud</h2>
+    <p>Ce que vous gérez, ce que le fournisseur gère, et ce que ça coûte.</p>
+  </div>
+</section>
+
+<section>
+  <p class="eyebrow">Panorama</p>
+  <h2 class="plain">IaaS, PaaS, serverless</h2>
+  <figure>
+    <img src="../assets/diagrams/cloud-modeles.svg" alt="Plus on va vers la droite, plus le fournisseur prend en charge les couches basses">
+  </figure>
+  <p class="small">Notre cas, une API conteneurisée, est au milieu : on fournit l'image et la configuration, le cloud fournit le reste.</p>
+</section>
+
+<section>
+  <p class="eyebrow">Panorama</p>
+  <h2>Trois notions qui reviennent partout</h2>
+  <div class="cols cols-3">
+    <div class="card fragment" data-kind="infra"><h3><i data-icon="refresh"></i> Scale-to-zero</h3><p>Aucune instance quand personne n'appelle le service : presque aucun coût, au prix d'un démarrage à froid de quelques secondes.</p></div>
+    <div class="card fragment" data-kind="infra"><h3><i data-icon="globe"></i> Région</h3><p>Où tournent les serveurs. <code>southafricanorth</code> est la plus proche de Madagascar ; <code>francecentral</code>, <code>westeurope</code> ont plus de services.</p></div>
+    <div class="card fragment" data-kind="infra"><h3><i data-icon="coins"></i> Facturation à l'usage</h3><p>CPU-secondes, Go-secondes, requêtes. Ce qui coûte, ce sont les ressources oubliées : supprimez le groupe de ressources à la fin.</p></div>
+  </div>
+</section>
+
+<section>
+  <p class="eyebrow">Panorama</p>
+  <h2>Les cibles de la formation</h2>
+  <table>
+    <thead><tr><th>Cible</th><th>Quoi</th><th>Coût</th><th>Qui</th></tr></thead>
+    <tbody>
+      <tr><td><strong>Streamlit Community Cloud</strong></td><td>l'application, depuis GitHub</td><td>gratuit, sans carte</td><td>tous · Lab 8</td></tr>
+      <tr class="fragment"><td><strong>Azure Container Apps</strong></td><td>l'API conteneurisée, image de la CI</td><td>Azure for Students + allocation gratuite</td><td>tous · Lab 9</td></tr>
+      <tr class="fragment"><td><strong>Google Cloud Run</strong></td><td>l'API conteneurisée</td><td>essai gratuit ou crédits enseignant</td><td>démo · Lab 10 optionnel</td></tr>
+      <tr class="fragment"><td><strong>Google AI Studio</strong></td><td>une clé Gemini pour l'application</td><td>gratuit, palier limité</td><td>tous · Lab 11</td></tr>
+      <tr class="fragment"><td>Render</td><td>l'API, alternative</td><td>plan gratuit, mise en veille</td><td><code>deploy/render.yaml</code></td></tr>
+    </tbody>
+  </table>
+  <div class="callout warn fragment"><i data-icon="warning"></i><p><strong>Hugging Face Spaces</strong>, longtemps la référence gratuite pour les démos ML, a restreint ses Spaces Docker et Gradio aux comptes payants courant 2026. Les offres changent : vérifiez la veille.</p></div>
+</section>
+
+<!-- ============================================================ 02 Plateformes ML -->
+<section class="section-slide">
+  <div class="num">02</div>
+  <div>
+    <p class="eyebrow">Partie 2</p>
+    <h2>Azure ML et Vertex AI</h2>
+    <p>Les plateformes ML managées : les mêmes étapes que la formation, avec d'autres noms.</p>
+  </div>
+</section>
+
+<section>
+  <p class="eyebrow">Plateformes ML managées</p>
+  <h2 class="plain">Les mêmes étapes, des noms différents</h2>
+  <figure>
+    <img src="../assets/diagrams/azure-ml-vs-vertex.svg" alt="Pour chaque étape du cycle de vie, le service correspondant chez Microsoft et chez Google">
+  </figure>
+</section>
+
+<section>
+  <p class="eyebrow">Plateformes ML managées</p>
+  <h2>Ce qu'il faut en retenir</h2>
+  <div class="stack">
+    <div class="callout ok fragment"><i data-icon="container"></i><p><strong>Les deux acceptent votre conteneur Docker tel quel.</strong> Le travail des séances 1 et 2 n'est pas perdu : c'est la condition pour en profiter.</p></div>
+    <div class="callout fragment"><i data-icon="chart"></i><p><strong>Azure ML parle MLflow nativement.</strong> Un <code>mlflow.log_model</code> dans un job Azure ML alimente son registre sans rien changer au code.</p></div>
+    <div class="callout warn fragment"><i data-icon="coins"></i><p><strong>Plus cher qu'un conteneur nu.</strong> Calcul managé facturé à la minute, endpoints facturés même sans trafic. Se justifie avec plusieurs modèles, des réentraînements réguliers, de la gouvernance.</p></div>
+    <div class="callout fragment"><i data-icon="eye"></i><p><strong>En formation : démonstration.</strong> Le formateur montre un workspace Azure ML et un projet Vertex AI ; vous pratiquez sur Container Apps et Cloud Run.</p></div>
+  </div>
+</section>
+
+<!-- ============================================================ 03 Streamlit Cloud -->
+<section class="section-slide">
+  <div class="num">03</div>
+  <div>
+    <p class="eyebrow">Partie 3</p>
+    <h2>Streamlit Community Cloud</h2>
+    <p>Le déploiement garanti : gratuit, sans carte, depuis GitHub.</p>
+  </div>
+</section>
+
+<section>
+  <p class="eyebrow">Streamlit Community Cloud</p>
+  <h2>Comment ça marche</h2>
+  <div class="pipeline" data-start="1" data-steps='[
+    {"label":"Dépôt GitHub","sub":"public","icon":"branch","kind":"code","edge":"clone"},
+    {"label":"requirements.txt","sub":"depuis uv.lock","icon":"file","kind":"code","edge":"pip install"},
+    {"label":"streamlit run","sub":"app/streamlit_app.py","icon":"play","kind":"user","edge":"HTTPS"},
+    {"label":"URL publique","sub":"…streamlit.app","icon":"globe","kind":"user","state":"done"}]'></div>
+  <div class="cols mt">
+    <pre data-title="terminal"><code class="language-bash" data-trim>uv export --format requirements-txt --no-dev --no-default-groups \
+  --group app --no-hashes --no-emit-project -o requirements.txt</code></pre>
+    <div class="stack">
+      <div class="callout fragment"><i data-icon="lock"></i><p>Les <strong>secrets</strong> (<code>API_URL</code>, <code>GEMINI_API_KEY</code>) se saisissent dans l'interface, au format TOML. Jamais dans le dépôt.</p></div>
+      <div class="callout fragment"><i data-icon="refresh"></i><p>Chaque push sur <code>main</code> redéploie : déploiement continu sans rien configurer.</p></div>
+    </div>
+  </div>
+</section>
+
+<section>
+  <p class="eyebrow">Streamlit Community Cloud</p>
+  <h2>Et le modèle ? Trois options</h2>
+  <div class="cols cols-3">
+    <div class="card accent fragment" data-kind="infra"><h3><i data-icon="api"></i> 1 · Mode API</h3><p>Secret <code>API_URL</code> vers votre API Azure (Lab 9). L'application ne porte aucun modèle.</p><p class="small">La plus propre.</p></div>
+    <div class="card fragment" data-kind="data"><h3><i data-icon="package"></i> 2 · Modèle téléchargé</h3><p>Secret <code>MODEL_URL</code> vers un <code>model.joblib</code> publié (asset d'une release GitHub). On sert exactement l'artefact validé.</p><p class="small">★★</p></div>
+    <div class="card dashed fragment" data-kind="user"><h3><i data-icon="warning"></i> 3 · Repli de démonstration</h3><p>Sans modèle, l'application s'entraîne au démarrage depuis <code>data/raw/diabetes.csv</code>.</p><p class="small">Pour réussir en séance ; à proscrire en vrai projet.</p></div>
+  </div>
+  <p class="small mt fragment">Le modèle servi doit être un <strong>artefact versionné</strong> : release, remote DVC, registre MLflow ou image Docker. Jamais réentraîné en silence.</p>
+</section>
+
+<section class="lab" data-minutes="30">
+  <p class="eyebrow alt">À vous de jouer · Lab 8</p>
+  <h2>Déployer l'application sur Streamlit Community Cloud</h2>
+  <div class="cols cols-21">
+    <ol class="steps">
+      <li><strong>Préparer le dépôt</strong> <code>requirements.txt</code> depuis <code>uv.lock</code>, <code>sys.path</code> vers <code>src/</code></li>
+      <li><strong>Le modèle</strong> mode API plus tard, repli de démonstration pour l'instant</li>
+      <li><strong>Créer l'application</strong> share.streamlit.io → dépôt, branche, <code>app/streamlit_app.py</code></li>
+      <li><strong>Advanced settings</strong> Python 3.11, secrets vides</li>
+      <li><strong>Deploy</strong> puis ouvrir l'URL depuis votre téléphone</li>
+      <li><strong>Mettre à jour</strong> un push, un redéploiement</li>
+    </ol>
+    <div class="card accent">
+      <h3><i data-icon="terminal"></i> Démarrage</h3>
+      <pre><code class="language-bash" data-trim>uv export --format requirements-txt --no-dev \
+  --no-default-groups --group app --no-hashes \
+  --no-emit-project -o requirements.txt
+git add requirements.txt &amp;&amp; git commit -m "Streamlit Cloud" &amp;&amp; git push</code></pre>
+      <p><span class="badge">★ étapes 1 à 6</span> <span class="badge alt">★★ modèle en release</span></p>
+      <p class="small">Guide détaillé : <code>labs/lab-08-streamlit-cloud.md</code></p>
+    </div>
+  </div>
+</section>
+
+<!-- ============================================================ 04 Azure -->
+<section class="section-slide">
+  <div class="num">04</div>
+  <div>
+    <p class="eyebrow">Partie 4</p>
+    <h2>Azure : Container Apps et Azure ML</h2>
+    <p>L'image de votre CI, en ligne, avec le crédit étudiant.</p>
+  </div>
+</section>
+
+<section>
+  <p class="eyebrow">Azure</p>
+  <h2>Azure for Students</h2>
+  <div class="cols cols-3">
+    <div><div class="big">100 $</div><p>de crédit, renouvelés chaque année tant que vous êtes étudiant</p></div>
+    <div class="fragment"><div class="big">0</div><p>carte bancaire : vérification par e-mail académique</p></div>
+    <div class="fragment"><div class="big">12 mois</div><p>de services gratuits, plus des services toujours gratuits</p></div>
+  </div>
+  <div class="callout ok mt fragment"><i data-icon="container"></i><p><strong>Azure Container Apps</strong> a en plus une allocation gratuite mensuelle (CPU-secondes, Go-secondes, requêtes) qui couvre largement une API de démonstration en scale-to-zero.</p></div>
+  <div class="callout warn fragment"><i data-icon="clock"></i><p>La vérification du statut étudiant peut prendre des jours : d'où sa place dans les prérequis. Si le site vous propose le compte « standard » avec carte, arrêtez et voyez le formateur.</p></div>
+</section>
+
+<section>
+  <p class="eyebrow">Azure</p>
+  <h2>Les objets, du plus large au plus précis</h2>
+  <table>
+    <thead><tr><th>Objet</th><th>Rôle</th></tr></thead>
+    <tbody>
+      <tr><td><strong>Abonnement</strong></td><td>votre compte Azure for Students et son crédit</td></tr>
+      <tr class="fragment"><td><strong>Groupe de ressources</strong> <code>rg-diabetes-ml</code></td><td>un dossier : tout le projet ; le supprimer efface tout</td></tr>
+      <tr class="fragment"><td><strong>Environnement Container Apps</strong></td><td>le réseau et les journaux (Log Analytics) partagés par vos applications</td></tr>
+      <tr class="fragment"><td><strong>Container App</strong> <code>diabetes-api</code></td><td>votre image, ses variables, son ingress HTTPS, ses règles d'échelle</td></tr>
+      <tr class="fragment"><td><strong>Azure Container Registry</strong> (optionnel)</td><td>un registre privé ; <code>az acr build</code> construit l'image dans Azure, sans Docker local</td></tr>
+    </tbody>
+  </table>
+</section>
+
+<section>
+  <p class="eyebrow">Azure</p>
+  <h2 class="plain">Déployer l'API</h2>
+  <figure>
+    <img src="../assets/diagrams/azure-deploy-flow.svg" alt="L'image publiée par la CI, ou construite dans ACR, est déployée dans une Container App exposée en HTTPS">
+  </figure>
+</section>
+
+<section>
+  <p class="eyebrow">Azure · projet fil rouge</p>
+  <h2>Les commandes</h2>
+  <div class="term">
+    <div class="bar"><i></i><i></i><i></i></div>
+    <div class="line"><span class="prompt">$ </span><span class="cmd">az login</span><span class="out">   &amp;&amp;   az extension add --name containerapp --upgrade</span></div>
+    <div class="line fragment"><span class="prompt">$ </span><span class="cmd">az group create --name rg-diabetes-ml --location francecentral</span></div>
+    <div class="line fragment"><span class="prompt">$ </span><span class="cmd">az containerapp env create --name cae-diabetes-ml --resource-group rg-diabetes-ml --location francecentral</span></div>
+    <div class="line fragment"><span class="prompt">$ </span><span class="cmd">az containerapp create --name diabetes-api --resource-group rg-diabetes-ml --environment cae-diabetes-ml \
+    --image ghcr.io/&lt;vous&gt;/&lt;depot&gt;/api:latest --target-port 8000 --ingress external \
+    --min-replicas 0 --max-replicas 1 --cpu 0.5 --memory 1.0Gi \
+    --env-vars MODEL_PATH=/app/models/model.joblib THRESHOLD=0.5</span></div>
+    <div class="line fragment"><span class="prompt">$ </span><span class="cmd">az containerapp show -n diabetes-api -g rg-diabetes-ml --query properties.configuration.ingress.fqdn -o tsv</span></div>
+    <div class="line fragment"><span class="ok">diabetes-api.kindhill-1a2b3c4d.francecentral.azurecontainerapps.io</span></div>
+    <div class="line fragment"><span class="prompt">$ </span><span class="cmd">curl https://diabetes-api.…azurecontainerapps.io/health</span></div>
+    <div class="line fragment"><span class="ok">{"status":"ok","model_loaded":true,"model_type":"random_forest","model_version":"0.1.0"}</span></div>
+  </div>
+  <p class="small">Le script <code>deploy/azure/deploy.ps1</code> (ou <code>.sh</code>) enchaîne tout cela et affiche l'URL.</p>
+</section>
+
+<section>
+  <p class="eyebrow">Azure</p>
+  <h2>Points d'attention</h2>
+  <div class="cols">
+    <div class="stack">
+      <div class="callout warn fragment"><i data-icon="lock"></i><p><strong>Image privée.</strong> Un package ghcr.io est privé par défaut : rendez-le public, ou passez <code>--registry-server ghcr.io --registry-username … --registry-password &lt;PAT&gt;</code>.</p></div>
+      <div class="callout fragment"><i data-icon="layers"></i><p><strong>Pas de Docker local ?</strong> <code>deploy.ps1 -UseAcr</code> construit l'image dans Azure Container Registry avec <code>az acr build</code>.</p></div>
+    </div>
+    <div class="stack">
+      <div class="callout fragment"><i data-icon="list"></i><p><strong>Journaux</strong> : <code>az containerapp logs show -n diabetes-api -g rg-diabetes-ml --follow</code>.</p></div>
+      <div class="callout err fragment"><i data-icon="coins"></i><p><strong>Nettoyage</strong> en fin de projet : <code>az group delete --name rg-diabetes-ml --yes --no-wait</code>. Tout disparaît, le crédit est préservé.</p></div>
+    </div>
+  </div>
+</section>
+
+<section>
+  <p class="eyebrow">Azure · démonstration</p>
+  <h2>Tour d'Azure ML Studio</h2>
+  <div class="cols cols-3">
+    <div class="card fragment" data-kind="data"><h3><i data-icon="database"></i> Workspace et Data assets</h3><p>Le conteneur de tout le projet ML ; les jeux de données versionnés dans un datastore. Ce que DVC fait chez nous.</p></div>
+    <div class="card fragment" data-kind="code"><h3><i data-icon="notebook"></i> Compute instance</h3><p>Une machine de développement managée, avec notebooks et VS Code dans le navigateur.</p></div>
+    <div class="card fragment" data-kind="code"><h3><i data-icon="model"></i> Jobs + MLflow</h3><p>Le même <code>train.py</code> lancé comme job ; ses <code>mlflow.log_*</code> alimentent l'onglet Jobs sans rien changer.</p></div>
+    <div class="card fragment" data-kind="data"><h3><i data-icon="tag"></i> Model registry</h3><p>Modèles au format MLflow, versions, étiquettes.</p></div>
+    <div class="card fragment" data-kind="infra"><h3><i data-icon="api"></i> Managed online endpoint</h3><p>Le modèle servi avec clé d'API, autoscaling, déploiements bleu/vert. Remplace notre Container App, en plus cher.</p></div>
+    <div class="card fragment" data-kind="infra"><h3><i data-icon="eye"></i> Monitoring</h3><p>Dérive des données et des prédictions, alertes.</p></div>
+  </div>
+</section>
+
+<section class="lab" data-minutes="45">
+  <p class="eyebrow alt">À vous de jouer · Lab 9</p>
+  <h2>Déployer l'API sur Azure Container Apps</h2>
+  <div class="cols cols-21">
+    <ol class="steps">
+      <li><strong>Se connecter</strong> <code>az login</code>, extension, fournisseurs</li>
+      <li><strong>Groupe de ressources</strong> <code>rg-diabetes-ml</code></li>
+      <li><strong>Environnement</strong> <code>cae-diabetes-ml</code></li>
+      <li><strong>Application</strong> <code>az containerapp create</code> avec votre image ghcr.io (publique)</li>
+      <li><strong>Tester</strong> <code>/docs</code>, <code>/health</code>, <code>curl /predict</code>, journaux</li>
+      <li><strong>Brancher Streamlit Cloud</strong> secret <code>API_URL</code> : interface sur Streamlit, API sur Azure</li>
+      <li><strong>Mettre à jour, nettoyer</strong> <code>az containerapp update</code>, <code>az group delete</code> (plus tard)</li>
+    </ol>
+    <div class="card accent">
+      <h3><i data-icon="terminal"></i> Démarrage</h3>
+      <pre><code class="language-bash" data-trim>az login
+az extension add --name containerapp --upgrade
+az group create --name rg-diabetes-ml --location francecentral</code></pre>
+      <p><span class="badge">★ étapes 1 à 7</span> <span class="badge alt">★★ ACR, image privée, déploiement continu, remote DVC</span></p>
+      <p class="small">Guide détaillé : <code>labs/lab-09-azure-container-apps.md</code></p>
+    </div>
+  </div>
+</section>
+
+<!-- ============================================================ 05 Google Cloud -->
+<section class="section-slide">
+  <div class="num">05</div>
+  <div>
+    <p class="eyebrow">Partie 5</p>
+    <h2>Google Cloud : Cloud Run et Vertex AI</h2>
+    <p>Les mêmes concepts, d'autres noms, en démonstration.</p>
+  </div>
+</section>
+
+<section>
+  <p class="eyebrow">Google Cloud</p>
+  <h2 class="plain">Cloud Run</h2>
+  <figure>
+    <img src="../assets/diagrams/gcp-cloud-run.svg" alt="Cloud Build construit l'image, Artifact Registry la stocke, Cloud Run la sert en HTTPS">
+  </figure>
+  <pre data-title="deploy/gcp/deploy.sh (cœur)"><code class="language-bash" data-trim>gcloud builds submit . --config deploy/gcp/cloudbuild.yaml --substitutions _IMAGE=$IMAGE
+gcloud run deploy diabetes-api --image $IMAGE --region europe-west1 --allow-unauthenticated --port 8000 --min-instances 0</code></pre>
+</section>
+
+<section>
+  <p class="eyebrow">Google Cloud</p>
+  <h2>Mêmes concepts, autres noms</h2>
+  <table>
+    <thead><tr><th></th><th>Azure Container Apps</th><th>Cloud Run</th></tr></thead>
+    <tbody>
+      <tr><td>Unité</td><td>Container App dans un Environment</td><td>Service dans un projet</td></tr>
+      <tr class="fragment"><td>Construire sans Docker</td><td><code>az acr build</code></td><td><code>gcloud builds submit</code></td></tr>
+      <tr class="fragment"><td>Registre</td><td>ACR, ou ghcr.io</td><td>Artifact Registry</td></tr>
+      <tr class="fragment"><td>Port</td><td><code>--target-port</code></td><td>variable <code>PORT</code> imposée</td></tr>
+      <tr class="fragment"><td>Échelle à zéro</td><td><code>--min-replicas 0</code></td><td><code>--min-instances 0</code></td></tr>
+      <tr class="fragment"><td>Journaux</td><td><code>az containerapp logs show</code></td><td><code>gcloud run services logs read</code></td></tr>
+      <tr class="fragment"><td>Tout supprimer</td><td><code>az group delete</code></td><td>supprimer le service, le dépôt, ou le projet</td></tr>
+    </tbody>
+  </table>
+  <p class="small fragment">C'est la raison d'apprendre la chaîne générique (image Docker + variables d'environnement) plutôt qu'un fournisseur.</p>
+</section>
+
+<section>
+  <p class="eyebrow">Google Cloud · démonstration</p>
+  <h2 class="plain">Vertex AI</h2>
+  <figure>
+    <img src="../assets/diagrams/vertex-pipeline.svg" alt="Entraînement managé, registre de modèles, endpoint de prédiction, et Gemini accessible depuis la même plateforme">
+  </figure>
+  <div class="cols">
+    <div class="callout"><i data-icon="container"></i><p>Un <em>conteneur de prédiction personnalisé</em> peut devenir un modèle Vertex, servi par un Endpoint avec autoscaling et monitoring. Notre API respecte presque ses prérequis (<code>/health</code>, port configurable).</p></div>
+    <div class="callout fragment"><i data-icon="sparkle"></i><p><strong>Vertex AI Studio</strong> donne accès à Gemini pour les entreprises (facturation et gouvernance du projet) ; <strong>Google AI Studio</strong> en est la version légère et gratuite pour les développeurs. Même API.</p></div>
+  </div>
+</section>
+
+<section class="lab" data-minutes="25">
+  <p class="eyebrow alt">À vous de jouer · Lab 10 (optionnel)</p>
+  <h2>Déployer l'API sur Cloud Run</h2>
+  <div class="cols cols-21">
+    <ol class="steps">
+      <li><strong>Installer et se connecter</strong> <code>gcloud auth login</code>, projet, activer les API</li>
+      <li><strong>Un dépôt d'images</strong> Artifact Registry</li>
+      <li><strong>Construire dans le cloud</strong> <code>gcloud builds submit</code></li>
+      <li><strong>Déployer</strong> <code>gcloud run deploy</code>, ouvrir <code>/docs</code></li>
+      <li><strong>Comparer</strong> avec Azure, puis nettoyer</li>
+    </ol>
+    <div class="card accent">
+      <h3><i data-icon="terminal"></i> Démarrage</h3>
+      <pre><code class="language-bash" data-trim>gcloud auth login
+gcloud config set project &lt;PROJECT_ID&gt;
+bash deploy/gcp/deploy.sh &lt;PROJECT_ID&gt; europe-west1</code></pre>
+      <p><span class="badge neutral">projet avec facturation requis</span> <span class="badge alt">★★ Vertex AI, service authentifié</span></p>
+      <p class="small">Sans projet : suivez la démonstration. Guide : <code>labs/lab-10-cloud-run-optionnel.md</code></p>
+    </div>
+  </div>
+</section>
+
+<!-- ============================================================ 06 AI Studio -->
+<section class="section-slide">
+  <div class="num">06</div>
+  <div>
+    <p class="eyebrow">Partie 6</p>
+    <h2>Google AI Studio : Gemini dans l'application</h2>
+    <p>Prototyper, créer une clé, la ranger, l'utiliser.</p>
+  </div>
+</section>
+
+<section>
+  <p class="eyebrow">Google AI Studio</p>
+  <h2 class="plain">De AI Studio à votre application</h2>
+  <figure>
+    <img src="../assets/diagrams/ai-studio-flow.svg" alt="On prototype le prompt dans AI Studio, on crée une clé, on la range dans un secret, et le SDK l'utilise depuis l'application">
+  </figure>
+  <p class="small">Palier gratuit : limites de débit par minute et par jour (consultez AI Studio, elles changent), et <strong>vos requêtes peuvent servir à améliorer les modèles</strong> : pas de données personnelles.</p>
+</section>
+
+<section>
+  <p class="eyebrow">Google AI Studio · projet fil rouge</p>
+  <h2>Le code</h2>
+  <div class="cols cols-21">
+    <pre data-title="app/streamlit_app.py (extrait)"><code class="language-python" data-trim data-line-numbers="1-3|5-11|13-14|16-21">import os
+from google import genai
+GEMINI_API_KEY = os.getenv("GEMINI_API_KEY", "")
+
+def explain_with_gemini(features, result):
+    client = genai.Client(api_key=GEMINI_API_KEY)
+    prompt = ("Tu es un assistant pédagogique … "
+              f"risque estimé {result['probability']:.0%} pour : {features} … "
+              "En quatre phrases, en français. Rappelle qu'il s'agit "
+              "d'un exercice pédagogique et non d'un avis médical.")
+    return client.models.generate_content(model="gemini-2.5-flash", contents=prompt).text
+
+if GEMINI_API_KEY and st.button("Expliquer cette estimation"):
+    with st.spinner("Gemini rédige…"):
+        try:
+            st.write(explain_with_gemini(features, result))
+        except Exception as exc:
+            st.error(f"Appel Gemini impossible : {exc}")
+# sans clé : pas de bouton, l'application reste utilisable</code></pre>
+    <div class="stack">
+      <div class="callout fragment"><i data-icon="shield"></i><p>Le prompt <strong>rappelle le cadre</strong> : exercice, pas d'avis médical. L'interface aussi.</p></div>
+      <div class="callout warn fragment"><i data-icon="warning"></i><p>Le <code>try/except</code> absorbe le <code>429</code> du palier gratuit et les pannes : un message, pas une page blanche.</p></div>
+      <div class="callout fragment"><i data-icon="key"></i><p>La clé vient de <code>os.environ</code>. Le code ne sait pas d'où : <code>.env</code>, secrets Streamlit, secret Container Apps.</p></div>
+    </div>
+  </div>
+</section>
+
+<section>
+  <p class="eyebrow">Les secrets</p>
+  <h2 class="plain">Une seule façon de lire, plusieurs façons de fournir</h2>
+  <figure>
+    <img src="../assets/diagrams/secrets-flow.svg" alt="L'application lit ses secrets dans les variables d'environnement ; chaque plateforme a son moyen de les injecter">
+  </figure>
+  <div class="callout err"><i data-icon="cross"></i><p>Une clé commitée est compromise, même supprimée au commit suivant : <strong>révoquez-la</strong> dans AI Studio et créez-en une autre. <code>git grep AIza</code> avant chaque push.</p></div>
+</section>
+
+<section class="lab" data-minutes="25">
+  <p class="eyebrow alt">À vous de jouer · Lab 11</p>
+  <h2>Gemini dans l'application</h2>
+  <div class="cols cols-21">
+    <ol class="steps">
+      <li><strong>Prototyper dans AI Studio</strong> le prompt d'explication, le modèle utilisé</li>
+      <li><strong>Créer une clé</strong> <em>Get API key</em></li>
+      <li><strong>La ranger dans un secret</strong> <code>.env</code> en local, Secrets sur Streamlit Cloud</li>
+      <li><strong>L'appeler depuis l'application</strong> <code>google-genai</code>, bouton, <code>try/except</code></li>
+      <li><strong>Tester les limites</strong> dix clics rapides : <code>429</code> géré proprement</li>
+      <li><strong>Vérifier Git</strong> <code>git grep AIza</code> ne trouve rien</li>
+    </ol>
+    <div class="card accent">
+      <h3><i data-icon="terminal"></i> Démarrage</h3>
+      <pre><code class="language-bash" data-trim>uv add --group app google-genai
+echo "GEMINI_API_KEY=AIza..." &gt;&gt; .env
+uv run streamlit run app/streamlit_app.py</code></pre>
+      <p><span class="badge">★ étapes 1 à 6</span> <span class="badge alt">★★ appel côté API, JSON structuré, cache</span></p>
+      <p class="small">Guide détaillé : <code>labs/lab-11-gemini-ai-studio.md</code></p>
+    </div>
+  </div>
+</section>
+
+<!-- ============================================================ 07 Après -->
+<section class="section-slide">
+  <div class="num">07</div>
+  <div>
+    <p class="eyebrow">Partie 7</p>
+    <h2>Après le déploiement</h2>
+    <p>Superviser, maîtriser les coûts, et boucler la boucle.</p>
+  </div>
+</section>
+
+<section>
+  <p class="eyebrow">Après le déploiement</p>
+  <h2>Trois réflexes</h2>
+  <div class="cols cols-3">
+    <div class="card fragment" data-kind="infra"><h3><i data-icon="eye"></i> Supervision minimale</h3><p><code>/health</code> interrogé par la plateforme, journaux centralisés, une alerte si le service ne répond plus.</p></div>
+    <div class="card fragment" data-kind="infra"><h3><i data-icon="coins"></i> Coûts</h3><p>Scale-to-zero, une réplique maximum en démo, budget avec alerte, suppression du groupe de ressources en fin de projet.</p></div>
+    <div class="card fragment" data-kind="data"><h3><i data-icon="chart"></i> Dérive</h3><p>Les données réelles finissent par ne plus ressembler aux données d'entraînement : surveiller les entrées et les retours, puis réentraîner.</p></div>
+  </div>
+</section>
+
+<section>
+  <p class="eyebrow">Après le déploiement</p>
+  <h2 class="plain">Avant de déployer : huit vérifications</h2>
+  <figure>
+    <img src="../assets/diagrams/checklist-prod.svg" alt="Les points à cocher entre un projet qui marche sur votre machine et une application en production">
+  </figure>
+  <p class="small">La version détaillée : <code>ressources/checklist-mise-en-production.md</code>.</p>
+</section>
+
+<section>
+  <p class="eyebrow">Après le déploiement</p>
+  <h2 class="plain">La boucle</h2>
+  <div class="cols cols-21">
+    <figure>
+      <img src="../assets/diagrams/boucle-mlops.svg" alt="Le déploiement n'est pas une fin : la supervision produit de nouvelles données qui relancent l'entraînement">
+    </figure>
+    <div class="stack">
+      <p>Le déploiement n'est pas la fin : la supervision produit de nouvelles données et de nouveaux retours, qui relancent l'entraînement, qui produit un nouveau déploiement.</p>
+      <div class="callout ok fragment"><i data-icon="check"></i><p>Tout ce que vous avez mis en place rend ce tour de boucle <strong>court et sûr</strong> : <code>dvc repro</code>, un run MLflow, les tests, une image, <code>az containerapp update</code>.</p></div>
+    </div>
+  </div>
+</section>
+
+<section class="recap">
+  <p class="eyebrow">Récapitulatif de la formation</p>
+  <h2>Trois séances, une chaîne complète</h2>
+  <div class="pipeline" data-fragments="false" data-steps='[
+    {"label":"Données","sub":"DVC","icon":"database","kind":"data","state":"done","edge":"prepare"},
+    {"label":"Entraînement","sub":"uv · MLflow","icon":"model","kind":"code","state":"done","edge":"artefact"},
+    {"label":"API","sub":"FastAPI · Docker","icon":"api","kind":"infra","state":"done","edge":"JSON"},
+    {"label":"Site web","sub":"Streamlit","icon":"browser","kind":"user","state":"done","edge":"CI"},
+    {"label":"Cloud","sub":"Azure · GCP","icon":"cloud","kind":"infra","state":"done","edge":"Gemini"},
+    {"label":"IA générative","sub":"AI Studio","icon":"sparkle","kind":"ai","state":"done"}]'></div>
+  <table class="mt">
+    <tbody>
+      <tr><td><span class="badge">Séance 1</span></td><td>rendre un projet reproductible : uv, DVC, MLflow</td></tr>
+      <tr><td><span class="badge">Séance 2</span></td><td>en faire un service : FastAPI, Streamlit, Docker, CI</td></tr>
+      <tr><td><span class="badge">Séance 3</span></td><td>le mettre en ligne : Streamlit Cloud, Container Apps, Cloud Run ; situer Azure ML, Vertex AI, AI Studio ; Gemini sans exposer de clé</td></tr>
+    </tbody>
+  </table>
+</section>
+
+<section class="title-slide">
+  <p class="eyebrow">Séance 3 / 3 · fin de la formation</p>
+  <h1>Merci, et à vos déploiements</h1>
+  <p class="subtitle">Cours et labs : <code>seance-3-cloud/README.md</code> · Pour continuer : <code>ressources/liens.md</code> · Projet de référence : <code>projet-fil-rouge/</code></p>
+  <div class="meta">
+    <span><i data-icon="cloud"></i> azure.microsoft.com/free/students</span>
+    <span><i data-icon="cloud"></i> cloud.google.com/run</span>
+    <span><i data-icon="sparkle"></i> aistudio.google.com</span>
+    <span><i data-icon="globe"></i> share.streamlit.io</span>
+  </div>
+</section>
+
+</div>
+</div>
+
+<script src="../assets/vendor/reveal.js/dist/reveal.js"></script>
+<script src="../assets/vendor/reveal.js/dist/plugin/notes.js"></script>
+<script src="../assets/vendor/reveal.js/dist/plugin/highlight.js"></script>
+<script src="../assets/vendor/reveal.js/dist/plugin/zoom.js"></script>
+<script src="../assets/vendor/reveal.js/dist/plugin/search.js"></script>
+<script src="../assets/js/icons.js"></script>
+<script src="../assets/js/pipeline.js"></script>
+<script src="../assets/js/deck.js"></script>
+</body>
+</html>

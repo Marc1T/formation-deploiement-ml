@@ -1,0 +1,127 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 380" width="1000" height="380" class="dg dg-request-flow" role="img" aria-labelledby="dg-request-flow-t dg-request-flow-d">
+<title id="dg-request-flow-t">Le trajet d’une prédiction</title>
+<desc id="dg-request-flow-d">Du clic dans le navigateur à l’affichage du résultat : requête HTTP, validation, prédiction, réponse JSON.</desc>
+
+  <style>
+    .dg-request-flow {
+      --bg:#F4F6F9; --surface:#FFFFFF; --surface2:#E9EDF3; --fg:#17202B; --muted:#5D6B7D;
+      --line:#D3DAE4; --line2:#B9C3D1; --accent:#0E6E8E; --accent2:#D9731A; --ok:#1D8F5A; --err:#C73E3E;
+      --data:#6D4FD3; --code:#0E6E8E; --infra:#1D8F5A; --user:#B8471B; --ai:#B5338A; --neutral:#8B97A8;
+      --nodefg:#FFFFFF; --ghostfg:#17202B;
+      font-family: Inter, "Segoe UI", system-ui, sans-serif;
+    }
+    @media (prefers-color-scheme: dark) {
+      .dg-request-flow {
+        --bg:#0D141D; --surface:#141D29; --surface2:#1B2634; --fg:#E7ECF3; --muted:#9AA9BB;
+        --line:#2B3A4C; --line2:#3C4D62; --accent:#4FB3D9; --accent2:#F0A050; --ok:#3FC27F; --err:#F26B6B;
+        --data:#A08BF0; --code:#4FB3D9; --infra:#3FC27F; --user:#F08A5B; --ai:#E27AC0; --neutral:#6B7A8C;
+        --nodefg:#0D141D; --ghostfg:#E7ECF3;
+      }
+    }
+    .dg-request-flow .bg { fill: var(--bg); }
+    .dg-request-flow text { fill: var(--fg); }
+    .dg-request-flow .muted { fill: var(--muted); }
+    .dg-request-flow .label { fill: var(--nodefg); font-weight: 600; }
+    .dg-request-flow .sublabel { fill: var(--nodefg); opacity: .85; }
+    .dg-request-flow .ghost .box { fill: var(--surface); stroke: var(--line2); stroke-dasharray: 6 5; stroke-width: 1.6; }
+    .dg-request-flow .ghost .label, .dg-request-flow .ghost .sublabel { fill: var(--ghostfg); }
+    .dg-request-flow .ghost .ic { color: var(--muted); }
+    .dg-request-flow .ic { color: var(--nodefg); }
+    .dg-request-flow .group { fill: var(--surface); stroke: var(--line); stroke-width: 1.5; }
+    .dg-request-flow .group.dashed { fill: none; stroke: var(--line2); stroke-dasharray: 7 6; }
+    .dg-request-flow .group.tint-data { fill: color-mix(in srgb, var(--data) 8%, var(--surface)); }
+    .dg-request-flow .group.tint-infra { fill: color-mix(in srgb, var(--infra) 8%, var(--surface)); }
+    .dg-request-flow .group.tint-user { fill: color-mix(in srgb, var(--user) 8%, var(--surface)); }
+    .dg-request-flow .group.tint-code { fill: color-mix(in srgb, var(--code) 8%, var(--surface)); }
+    .dg-request-flow .group.tint-ai { fill: color-mix(in srgb, var(--ai) 8%, var(--surface)); }
+    .dg-request-flow .group-title { fill: var(--muted); font-size: 11px; font-weight: 600; letter-spacing: .08em; text-transform: uppercase; }
+    .dg-request-flow .edge { fill: none; stroke: var(--muted); stroke-width: 2.4; stroke-linecap: round; }
+    .dg-request-flow .edge.thin { stroke-width: 1.6; }
+    .dg-request-flow .edge.dashed { stroke-dasharray: 6 6; }
+    .dg-request-flow .edge.flow { stroke-dasharray: 9 8; animation: dg-request-flow-flow 1.1s linear infinite; }
+    .dg-request-flow .edge.slow { animation-duration: 2.2s; }
+    .dg-request-flow .edge.accent { stroke: var(--accent); }
+    .dg-request-flow .edge.warn { stroke: var(--accent2); }
+    .dg-request-flow .edge.ok { stroke: var(--ok); }
+    .dg-request-flow .edge.err { stroke: var(--err); }
+    .dg-request-flow .edge.data { stroke: var(--data); }
+    .dg-request-flow .edge.ai { stroke: var(--ai); }
+    .dg-request-flow .edge.lifeline { stroke: var(--line2); stroke-width: 1.5; stroke-dasharray: 4 5; }
+    .dg-request-flow .arrow { fill: var(--muted); }
+    .dg-request-flow .arrow.accent { fill: var(--accent); } .dg-request-flow .arrow.warn { fill: var(--accent2); }
+    .dg-request-flow .arrow.ok { fill: var(--ok); } .dg-request-flow .arrow.err { fill: var(--err); }
+    .dg-request-flow .arrow.data { fill: var(--data); } .dg-request-flow .arrow.ai { fill: var(--ai); }
+    .dg-request-flow .edge-label { fill: var(--muted); font-size: 11.5px; font-family: "JetBrains Mono", Consolas, monospace; }
+    .dg-request-flow .edge-label.fg { fill: var(--fg); }
+    .dg-request-flow .edge-label-bg { fill: var(--bg); }
+    .dg-request-flow .badge-done { fill: var(--ok); } .dg-request-flow .badge-err { fill: var(--err); } .dg-request-flow .badge-run { fill: var(--accent2); }
+    .dg-request-flow .badge-ic { color: #fff; }
+    .dg-request-flow .note { fill: var(--muted); font-size: 12px; }
+    .dg-request-flow .fg { fill: var(--fg); }
+    .dg-request-flow .strong { font-weight: 600; }
+    .dg-request-flow .title { fill: var(--fg); font-size: 15px; font-weight: 600; }
+    .dg-request-flow .small { font-size: 11px; }
+    .dg-request-flow .pill { fill: var(--surface2); }
+    .dg-request-flow .pill-text { fill: var(--fg); font-size: 11.5px; font-weight: 600; }
+    .dg-request-flow .pill.user { fill: var(--user); } .dg-request-flow .pill.infra { fill: var(--infra); }
+    .dg-request-flow .pill.user .pill-text, .dg-request-flow .pill.infra .pill-text { fill: var(--nodefg); }
+    .dg-request-flow .cross { stroke: var(--err); stroke-width: 3; stroke-linecap: round; }
+    @keyframes dg-request-flow-flow { to { stroke-dashoffset: -34; } }
+    @media (prefers-reduced-motion: reduce) { .dg-request-flow .edge.flow { animation: none; } }
+  </style>
+<defs>
+<marker id="dg-request-flow-arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0 0 L10 5 L0 10 z" class="arrow "/></marker>
+<marker id="dg-request-flow-arrow-data" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0 0 L10 5 L0 10 z" class="arrow data"/></marker>
+<symbol id="dg-request-flow-i-check" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="m5 12 5 5L20 7"/></symbol>
+<symbol id="dg-request-flow-i-cross" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M6 6l12 12M18 6 6 18"/></symbol>
+<symbol id="dg-request-flow-i-refresh" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M20 11a8 8 0 0 0-14.5-4.5L3 9M4 13a8 8 0 0 0 14.5 4.5L21 15"/><path d="M3 4v5h5M21 20v-5h-5"/></symbol>
+<symbol id="dg-request-flow-i-browser" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="16" rx="2"/><path d="M3 9h18M7 6.5h.01M10 6.5h.01"/></symbol>
+<symbol id="dg-request-flow-i-globe" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M3 12h18M12 3a14 14 0 0 1 0 18M12 3a14 14 0 0 0 0 18"/></symbol>
+<symbol id="dg-request-flow-i-api" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 12h5M15 12h5"/><rect x="9" y="8" width="6" height="8" rx="1.5"/><path d="M4 8v8M20 8v8"/></symbol>
+<symbol id="dg-request-flow-i-model" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="5" r="2.2"/><circle cx="5" cy="19" r="2.2"/><circle cx="19" cy="19" r="2.2"/><circle cx="12" cy="13" r="2.2"/><path d="M12 7.2v3.6M10.4 14.6l-4 2.8M13.6 14.6l4 2.8"/></symbol>
+</defs>
+<rect class="bg" width="1000" height="380" rx="18"/>
+<path class="edge lifeline" d="M125 68 L125 362" />
+<path class="edge lifeline" d="M375 68 L375 362" />
+<path class="edge lifeline" d="M625 68 L625 362" />
+<path class="edge lifeline" d="M875 68 L875 362" />
+<path class="edge solid" d="M125 110 L371 110" marker-end="url(#dg-request-flow-arrow)"/>
+<rect class="edge-label-bg" x="152.3" y="90" width="191.4" height="16" rx="4"/>
+<text class="edge-label fg" x="248" y="102" text-anchor="middle">clic « Estimer le risque »</text>
+<path class="edge solid" d="M375 150 L621 150" marker-end="url(#dg-request-flow-arrow)"/>
+<rect class="edge-label-bg" x="385.05" y="130" width="225.9" height="16" rx="4"/>
+<text class="edge-label fg" x="498" y="142" text-anchor="middle">POST /predict {glucose: 138, …}</text>
+<path class="edge solid" d="M625 215 L871 215" marker-end="url(#dg-request-flow-arrow)"/>
+<rect class="edge-label-bg" x="686.8" y="195" width="122.4" height="16" rx="4"/>
+<text class="edge-label fg" x="748" y="207" text-anchor="middle">predict_proba(x)</text>
+<path class="edge solid data" d="M875 255 L629 255" marker-end="url(#dg-request-flow-arrow-data)"/>
+<rect class="edge-label-bg" x="732.2" y="235" width="39.6" height="16" rx="4"/>
+<text class="edge-label fg" x="752" y="247" text-anchor="middle">0.72</text>
+<path class="edge solid data" d="M625 295 L379 295" marker-end="url(#dg-request-flow-arrow-data)"/>
+<rect class="edge-label-bg" x="406.3" y="275" width="191.4" height="16" rx="4"/>
+<text class="edge-label fg" x="502" y="287" text-anchor="middle">200 {probability: 0.72, …}</text>
+<path class="edge solid data" d="M375 335 L129 335" marker-end="url(#dg-request-flow-arrow-data)"/>
+<rect class="edge-label-bg" x="139.05" y="315" width="225.9" height="16" rx="4"/>
+<text class="edge-label fg" x="252" y="327" text-anchor="middle">affiche « 72 % · risque élevé »</text>
+<g class="node " data-id="nav">
+<rect class="box" fill="var(--user)" x="40" y="24" width="170" height="44" rx="12"/>
+<use class="ic" href="#dg-request-flow-i-browser" x="54" y="37" width="18" height="18"/>
+<text class="label" x="82" y="50.333333333333336" font-size="13">Navigateur</text>
+</g>
+<g class="node " data-id="st">
+<rect class="box" fill="var(--code)" x="290" y="24" width="170" height="44" rx="12"/>
+<use class="ic" href="#dg-request-flow-i-globe" x="304" y="37" width="18" height="18"/>
+<text class="label" x="332" y="50.333333333333336" font-size="13">Streamlit</text>
+</g>
+<g class="node " data-id="api">
+<rect class="box" fill="var(--infra)" x="540" y="24" width="170" height="44" rx="12"/>
+<use class="ic" href="#dg-request-flow-i-api" x="554" y="37" width="18" height="18"/>
+<text class="label" x="582" y="50.333333333333336" font-size="13">API FastAPI</text>
+</g>
+<g class="node " data-id="model">
+<rect class="box" fill="var(--data)" x="790" y="24" width="170" height="44" rx="12"/>
+<use class="ic" href="#dg-request-flow-i-model" x="804" y="37" width="18" height="18"/>
+<text class="label" x="832" y="50.333333333333336" font-size="13">Modèle</text>
+</g>
+<g><rect class="pill " x="640" y="172" width="297.6" height="22" rx="11"/><text class="pill-text" x="788.8" y="187" text-anchor="middle">Pydantic : 422 si le JSON est invalide</text></g>
+</svg>

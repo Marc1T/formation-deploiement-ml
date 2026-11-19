@@ -1,0 +1,99 @@
+# Intégration continue : qualité du code, tests, puis construction et publication
+# de l'image de l'API dans GitHub Container Registry (ghcr.io).
+#
+# Ce workflow s'exécute quand ce projet est la racine d'un dépôt GitHub.
+# L'image publiée s'appelle ghcr.io/<proprietaire>/<depot>/api:<tag>.
+
+name: CI
+
+on:
+  push:
+    branches: [main]
+    tags: ["v*"]
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  packages: write
+
+env:
+  IMAGE_NAME: ghcr.io/${{ github.repository }}/api
+
+jobs:
+  qualite:
+    name: Lint et tests
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Installer uv
+        uses: astral-sh/setup-uv@v6
+        with:
+          enable-cache: true
+
+      - name: Installer Python et les dépendances
+        run: |
+          uv python install
+          uv sync --frozen
+
+      - name: Ruff (style et erreurs courantes)
+        run: |
+          uv run ruff check .
+          uv run ruff format --check .
+
+      - name: Tests
+        run: uv run pytest
+
+  image:
+    name: Image Docker de l'API
+    needs: qualite
+    if: github.event_name != 'pull_request'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Installer uv
+        uses: astral-sh/setup-uv@v6
+        with:
+          enable-cache: true
+
+      - name: Entraîner le modèle (pipeline DVC)
+        run: |
+          uv python install
+          uv sync --frozen
+          uv run dvc repro
+          uv run dvc metrics show
+
+      - name: Se connecter à ghcr.io
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Calculer les tags de l'image
+        id: meta
+        uses: docker/metadata-action@v5
+        with:
+          images: ${{ env.IMAGE_NAME }}
+          tags: |
+            type=raw,value=latest,enable={{is_default_branch}}
+            type=sha,prefix=
+            type=semver,pattern={{version}}
+
+      - name: Construire et publier
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          file: docker/api.Dockerfile
+          push: true
+          tags: ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}
+
+      - name: Résumé
+        run: |
+          echo "### Image publiée" >> "$GITHUB_STEP_SUMMARY"
+          echo '```' >> "$GITHUB_STEP_SUMMARY"
+          echo "${{ steps.meta.outputs.tags }}" >> "$GITHUB_STEP_SUMMARY"
+          echo '```' >> "$GITHUB_STEP_SUMMARY"

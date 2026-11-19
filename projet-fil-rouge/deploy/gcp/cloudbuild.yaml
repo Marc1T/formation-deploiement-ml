@@ -1,0 +1,11 @@
+# Cloud Build : construit l'image de l'API à partir de docker/api.Dockerfile
+# et la pousse dans Artifact Registry. Utilisé par deploy/gcp/deploy.sh.
+steps:
+  - name: gcr.io/cloud-builders/docker
+    args: ["build", "-f", "docker/api.Dockerfile", "-t", "${_IMAGE}", "."]
+images:
+  - "${_IMAGE}"
+substitutions:
+  _IMAGE: ""
+options:
+  logging: CLOUD_LOGGING_ONLY

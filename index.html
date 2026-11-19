@@ -1,0 +1,148 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Déployer un modèle ML et un site web</title>
+<meta name="description" content="Formation de la Cellule Info CEAM : de la conception du modèle au déploiement d'une solution fonctionnelle. Accès aux présentations, aux cours et au projet fil rouge.">
+<link rel="stylesheet" href="assets/css/fonts.css">
+<style>
+  /* Page d'accueil : même palette et mêmes tokens que les decks */
+  :root {
+    --bg: #F4F6F9; --surface: #FFFFFF; --surface-2: #E9EDF3; --fg: #17202B; --muted: #5D6B7D; --line: #D3DAE4;
+    --accent: #0E6E8E; --accent-soft: #D6EAF2; --accent-2: #D9731A; --ok: #1D8F5A;
+    --c-data: #6D4FD3; --c-code: #0E6E8E; --c-infra: #1D8F5A; --c-user: #B8471B; --c-ai: #B5338A;
+    --shadow: 0 10px 30px rgba(23, 32, 43, .08);
+    --font-display: "Sora", "Segoe UI", system-ui, sans-serif;
+    --font-text: "Inter", "Segoe UI", system-ui, sans-serif;
+    --font-mono: "JetBrains Mono", "Cascadia Mono", Consolas, monospace;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --bg: #0D141D; --surface: #141D29; --surface-2: #1B2634; --fg: #E7ECF3; --muted: #9AA9BB; --line: #2B3A4C;
+      --accent: #4FB3D9; --accent-soft: #143548; --accent-2: #F0A050; --ok: #3FC27F;
+      --c-data: #A08BF0; --c-code: #4FB3D9; --c-infra: #3FC27F; --c-user: #F08A5B; --c-ai: #E27AC0;
+      --shadow: 0 10px 30px rgba(0, 0, 0, .35); color-scheme: dark;
+    }
+  }
+  :root[data-theme="dark"] {
+    --bg: #0D141D; --surface: #141D29; --surface-2: #1B2634; --fg: #E7ECF3; --muted: #9AA9BB; --line: #2B3A4C;
+    --accent: #4FB3D9; --accent-soft: #143548; --accent-2: #F0A050; --ok: #3FC27F;
+    --c-data: #A08BF0; --c-code: #4FB3D9; --c-infra: #3FC27F; --c-user: #F08A5B; --c-ai: #E27AC0;
+    --shadow: 0 10px 30px rgba(0, 0, 0, .35); color-scheme: dark;
+  }
+  * { box-sizing: border-box; }
+  body { margin: 0; background: var(--bg); color: var(--fg); font-family: var(--font-text); line-height: 1.5; padding-block: 0 48px; padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px)); }
+  .wrap { max-width: 1120px; margin: 0 auto; }
+  header { padding: 56px 0 24px; }
+  .eyebrow { font-size: .8rem; font-weight: 600; letter-spacing: .14em; text-transform: uppercase; color: var(--accent); margin: 0 0 12px; }
+  h1 { font-family: var(--font-display); font-size: clamp(2rem, 4.5vw, 3.2rem); line-height: 1.1; letter-spacing: -.02em; margin: 0 0 14px; text-wrap: balance; max-width: 18ch; }
+  .lead { font-size: 1.15rem; color: var(--muted); max-width: 62ch; margin: 0 0 24px; }
+  .hero { background: var(--surface); border: 1px solid var(--line); border-radius: 20px; padding: 18px; box-shadow: var(--shadow); margin: 8px 0 40px; }
+  .hero img { width: 100%; height: auto; display: block; border-radius: 12px; }
+  h2 { font-family: var(--font-display); font-size: 1.45rem; letter-spacing: -.01em; margin: 40px 0 16px; }
+  .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(290px, 1fr)); gap: 18px; }
+  .card { background: var(--surface); border: 1px solid var(--line); border-radius: 18px; padding: 22px 24px; box-shadow: var(--shadow); display: flex; flex-direction: column; gap: 10px; min-width: 0; position: relative; }
+  .card .num { font-family: var(--font-display); font-weight: 700; font-size: 2.2rem; line-height: 1; color: var(--accent); opacity: .3; position: absolute; right: 20px; top: 14px; }
+  .card h3 { font-family: var(--font-display); font-size: 1.15rem; margin: 0; padding-right: 60px; }
+  .card p { margin: 0; color: var(--muted); font-size: .95rem; }
+  .tools { display: flex; flex-wrap: wrap; gap: 6px; }
+  .tag { font-size: .75rem; font-weight: 600; padding: .2em .7em; border-radius: 999px; background: var(--surface-2); color: var(--fg); }
+  .tag.data { background: color-mix(in srgb, var(--c-data) 18%, transparent); } .tag.code { background: color-mix(in srgb, var(--c-code) 18%, transparent); }
+  .tag.infra { background: color-mix(in srgb, var(--c-infra) 18%, transparent); } .tag.user { background: color-mix(in srgb, var(--c-user) 18%, transparent); } .tag.ai { background: color-mix(in srgb, var(--c-ai) 18%, transparent); }
+  .actions { display: flex; flex-wrap: wrap; gap: 10px; margin-top: auto; padding-top: 6px; }
+  .btn { display: inline-flex; align-items: center; gap: .5em; font-weight: 600; font-size: .9rem; padding: .55em 1em; border-radius: 10px; text-decoration: none; color: var(--accent); background: var(--accent-soft); border: 1px solid transparent; }
+  .btn.primary { background: var(--accent); color: #fff; }
+  .btn:hover { filter: brightness(1.05); }
+  .btn:focus-visible { outline: 3px solid var(--accent-2); outline-offset: 2px; }
+  .row { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 14px; }
+  .link { display: flex; gap: 12px; align-items: flex-start; background: var(--surface); border: 1px solid var(--line); border-radius: 14px; padding: 14px 16px; text-decoration: none; color: inherit; min-width: 0; }
+  .link strong { display: block; font-size: .98rem; }
+  .link span { color: var(--muted); font-size: .88rem; }
+  .link:hover { border-color: var(--accent); }
+  kbd { font-family: var(--font-mono); font-size: .8em; padding: .1em .45em; border-radius: 6px; border: 1px solid var(--line); border-bottom-width: 3px; background: var(--surface); }
+  .note { color: var(--muted); font-size: .9rem; margin: 16px 0 0; }
+  table { width: 100%; border-collapse: collapse; background: var(--surface); border-radius: 14px; overflow: hidden; box-shadow: var(--shadow); font-size: .92rem; }
+  th { text-align: left; font-size: .78rem; letter-spacing: .06em; text-transform: uppercase; color: var(--muted); background: var(--surface-2); padding: .6em .9em; }
+  td { padding: .6em .9em; border-top: 1px solid var(--line); vertical-align: top; }
+  footer { margin-top: 48px; color: var(--muted); font-size: .85rem; }
+  code { font-family: var(--font-mono); font-size: .9em; background: var(--surface-2); padding: .08em .4em; border-radius: 6px; }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <p class="eyebrow">Cellule Info CEAM · Formation en 3 séances</p>
+    <h1>Déployer un modèle ML et un site web</h1>
+    <p class="lead">De la conception du modèle à une solution fonctionnelle en ligne : uv, DVC et MLflow pour la reproductibilité ; FastAPI, Streamlit, Docker et GitHub Actions pour l'application ; Streamlit Cloud, Azure, Google Cloud et Gemini pour la production.</p>
+    <div class="hero">
+      <img src="assets/diagrams/chaine-complete.svg" alt="La chaîne complète : données, entraînement, modèle versionné, API, site web, cloud, regroupés par séance">
+    </div>
+  </header>
+
+  <h2>Les trois séances</h2>
+  <div class="grid">
+    <article class="card">
+      <div class="num">01</div>
+      <h3>Du notebook au projet reproductible</h3>
+      <p>Pourquoi déployer, Git express, puis uv, DVC et MLflow. Trois labs pour transformer un notebook en projet que n'importe qui peut réinstaller, relancer et comparer.</p>
+      <div class="tools"><span class="tag code">Git</span><span class="tag code">uv</span><span class="tag data">DVC</span><span class="tag data">MLflow</span></div>
+      <div class="actions">
+        <a class="btn primary" href="seance-1-fondations/slides.html">Présentation</a>
+        <a class="btn" href="https://github.com/Marc1T/formation-deploiement-ml/blob/main/seance-1-fondations/README.md">Cours et labs</a>
+      </div>
+    </article>
+    <article class="card">
+      <div class="num">02</div>
+      <h3>Du modèle à une application web</h3>
+      <p>Architecture, API FastAPI validée et testée, interface Streamlit, image Docker en deux étapes, Docker Compose, et une CI GitHub Actions qui publie l'image.</p>
+      <div class="tools"><span class="tag infra">FastAPI</span><span class="tag user">Streamlit</span><span class="tag infra">Docker</span><span class="tag code">GitHub Actions</span></div>
+      <div class="actions">
+        <a class="btn primary" href="seance-2-application-web/slides.html">Présentation</a>
+        <a class="btn" href="https://github.com/Marc1T/formation-deploiement-ml/blob/main/seance-2-application-web/README.md">Cours et labs</a>
+      </div>
+    </article>
+    <article class="card">
+      <div class="num">03</div>
+      <h3>Mise en production dans le cloud</h3>
+      <p>Panorama du cloud, déploiement gratuit sur Streamlit Community Cloud, API sur Azure Container Apps, Cloud Run en démonstration, tour d'Azure ML et de Vertex AI, Gemini via AI Studio.</p>
+      <div class="tools"><span class="tag user">Streamlit Cloud</span><span class="tag infra">Azure</span><span class="tag infra">GCP</span><span class="tag ai">Gemini</span></div>
+      <div class="actions">
+        <a class="btn primary" href="seance-3-cloud/slides.html">Présentation</a>
+        <a class="btn" href="https://github.com/Marc1T/formation-deploiement-ml/blob/main/seance-3-cloud/README.md">Cours et labs</a>
+      </div>
+    </article>
+  </div>
+
+  <h2>Le projet fil rouge</h2>
+  <div class="row">
+    <a class="link" href="https://github.com/Marc1T/formation-deploiement-ml/blob/main/projet-fil-rouge/README.md"><div><strong>projet-fil-rouge/</strong><span>Un dépôt complet et fonctionnel : modèle, pipeline DVC, MLflow, API, interface, Docker, CI, scripts de déploiement Azure, GCP, Render et guide Streamlit Cloud.</span></div></a>
+    <a class="link" href="https://github.com/Marc1T/formation-deploiement-ml/blob/main/00-prerequis/README.md"><div><strong>Prérequis</strong><span>Installations et comptes à créer avant la séance 1 : uv, Git, Docker, GitHub, Azure for Students, Google, Streamlit Cloud.</span></div></a>
+  </div>
+
+  <h2>Ressources</h2>
+  <div class="row">
+    <a class="link" href="https://github.com/Marc1T/formation-deploiement-ml/blob/main/ressources/comparatif-cloud.md"><div><strong>Comparatif cloud</strong><span>Cibles de déploiement, programmes étudiants, Azure ML face à Vertex AI.</span></div></a>
+    <a class="link" href="https://github.com/Marc1T/formation-deploiement-ml/blob/main/ressources/checklist-mise-en-production.md"><div><strong>Checklist de mise en production</strong><span>Les vérifications avant de déployer, reliées à ce que la formation met en place.</span></div></a>
+    <a class="link" href="https://github.com/Marc1T/formation-deploiement-ml/blob/main/ressources/glossaire.md"><div><strong>Glossaire</strong><span>Les termes de la formation, avec la séance où ils apparaissent.</span></div></a>
+    <a class="link" href="https://github.com/Marc1T/formation-deploiement-ml/blob/main/ressources/liens.md"><div><strong>Liens</strong><span>Documentation officielle, offres, lectures pour continuer.</span></div></a>
+  </div>
+
+  <h2>Utiliser les présentations</h2>
+  <table>
+    <thead><tr><th>Touche</th><th>Action</th></tr></thead>
+    <tbody>
+      <tr><td><kbd>→</kbd> <kbd>Espace</kbd></td><td>Diapo ou fragment suivant</td></tr>
+      <tr><td><kbd>S</kbd></td><td>Vue présentateur : notes, minuteur, diapo suivante</td></tr>
+      <tr><td><kbd>Échap</kbd></td><td>Vue d'ensemble</td></tr>
+      <tr><td><kbd>D</kbd></td><td>Basculer clair / sombre (mémorisé)</td></tr>
+      <tr><td><kbd>T</kbd></td><td>Lancer ou mettre en pause le minuteur d'un lab</td></tr>
+      <tr><td><kbd>F</kbd></td><td>Plein écran</td></tr>
+    </tbody>
+  </table>
+    <p class="note">Les présentations fonctionnent aussi hors ligne : clonez le dépôt et ouvrez <code>index.html</code>. Version imprimable : ajoutez <code>?print-pdf</code> à l'adresse d'une présentation, puis imprimez en PDF (paysage) depuis Edge ou Chrome.</p>
+
+  <footer>Contenu pédagogique sous licence CC BY 4.0 · code du projet fil rouge sous licence MIT · reveal.js (MIT) © Hakim El Hattab · <a href="https://github.com/Marc1T/formation-deploiement-ml">Dépôt GitHub de la formation</a></footer>
+</div>
+</body>
+</html>

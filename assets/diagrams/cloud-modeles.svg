@@ -1,0 +1,144 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 350" width="1000" height="350" class="dg dg-cloud-modeles" role="img" aria-labelledby="dg-cloud-modeles-t dg-cloud-modeles-d">
+<title id="dg-cloud-modeles-t">IaaS, PaaS, serverless : ce que vous gérez, ce que le cloud gère</title>
+<desc id="dg-cloud-modeles-d">Plus on va vers la droite, plus le fournisseur prend en charge les couches basses.</desc>
+
+  <style>
+    .dg-cloud-modeles {
+      --bg:#F4F6F9; --surface:#FFFFFF; --surface2:#E9EDF3; --fg:#17202B; --muted:#5D6B7D;
+      --line:#D3DAE4; --line2:#B9C3D1; --accent:#0E6E8E; --accent2:#D9731A; --ok:#1D8F5A; --err:#C73E3E;
+      --data:#6D4FD3; --code:#0E6E8E; --infra:#1D8F5A; --user:#B8471B; --ai:#B5338A; --neutral:#8B97A8;
+      --nodefg:#FFFFFF; --ghostfg:#17202B;
+      font-family: Inter, "Segoe UI", system-ui, sans-serif;
+    }
+    @media (prefers-color-scheme: dark) {
+      .dg-cloud-modeles {
+        --bg:#0D141D; --surface:#141D29; --surface2:#1B2634; --fg:#E7ECF3; --muted:#9AA9BB;
+        --line:#2B3A4C; --line2:#3C4D62; --accent:#4FB3D9; --accent2:#F0A050; --ok:#3FC27F; --err:#F26B6B;
+        --data:#A08BF0; --code:#4FB3D9; --infra:#3FC27F; --user:#F08A5B; --ai:#E27AC0; --neutral:#6B7A8C;
+        --nodefg:#0D141D; --ghostfg:#E7ECF3;
+      }
+    }
+    .dg-cloud-modeles .bg { fill: var(--bg); }
+    .dg-cloud-modeles text { fill: var(--fg); }
+    .dg-cloud-modeles .muted { fill: var(--muted); }
+    .dg-cloud-modeles .label { fill: var(--nodefg); font-weight: 600; }
+    .dg-cloud-modeles .sublabel { fill: var(--nodefg); opacity: .85; }
+    .dg-cloud-modeles .ghost .box { fill: var(--surface); stroke: var(--line2); stroke-dasharray: 6 5; stroke-width: 1.6; }
+    .dg-cloud-modeles .ghost .label, .dg-cloud-modeles .ghost .sublabel { fill: var(--ghostfg); }
+    .dg-cloud-modeles .ghost .ic { color: var(--muted); }
+    .dg-cloud-modeles .ic { color: var(--nodefg); }
+    .dg-cloud-modeles .group { fill: var(--surface); stroke: var(--line); stroke-width: 1.5; }
+    .dg-cloud-modeles .group.dashed { fill: none; stroke: var(--line2); stroke-dasharray: 7 6; }
+    .dg-cloud-modeles .group.tint-data { fill: color-mix(in srgb, var(--data) 8%, var(--surface)); }
+    .dg-cloud-modeles .group.tint-infra { fill: color-mix(in srgb, var(--infra) 8%, var(--surface)); }
+    .dg-cloud-modeles .group.tint-user { fill: color-mix(in srgb, var(--user) 8%, var(--surface)); }
+    .dg-cloud-modeles .group.tint-code { fill: color-mix(in srgb, var(--code) 8%, var(--surface)); }
+    .dg-cloud-modeles .group.tint-ai { fill: color-mix(in srgb, var(--ai) 8%, var(--surface)); }
+    .dg-cloud-modeles .group-title { fill: var(--muted); font-size: 11px; font-weight: 600; letter-spacing: .08em; text-transform: uppercase; }
+    .dg-cloud-modeles .edge { fill: none; stroke: var(--muted); stroke-width: 2.4; stroke-linecap: round; }
+    .dg-cloud-modeles .edge.thin { stroke-width: 1.6; }
+    .dg-cloud-modeles .edge.dashed { stroke-dasharray: 6 6; }
+    .dg-cloud-modeles .edge.flow { stroke-dasharray: 9 8; animation: dg-cloud-modeles-flow 1.1s linear infinite; }
+    .dg-cloud-modeles .edge.slow { animation-duration: 2.2s; }
+    .dg-cloud-modeles .edge.accent { stroke: var(--accent); }
+    .dg-cloud-modeles .edge.warn { stroke: var(--accent2); }
+    .dg-cloud-modeles .edge.ok { stroke: var(--ok); }
+    .dg-cloud-modeles .edge.err { stroke: var(--err); }
+    .dg-cloud-modeles .edge.data { stroke: var(--data); }
+    .dg-cloud-modeles .edge.ai { stroke: var(--ai); }
+    .dg-cloud-modeles .edge.lifeline { stroke: var(--line2); stroke-width: 1.5; stroke-dasharray: 4 5; }
+    .dg-cloud-modeles .arrow { fill: var(--muted); }
+    .dg-cloud-modeles .arrow.accent { fill: var(--accent); } .dg-cloud-modeles .arrow.warn { fill: var(--accent2); }
+    .dg-cloud-modeles .arrow.ok { fill: var(--ok); } .dg-cloud-modeles .arrow.err { fill: var(--err); }
+    .dg-cloud-modeles .arrow.data { fill: var(--data); } .dg-cloud-modeles .arrow.ai { fill: var(--ai); }
+    .dg-cloud-modeles .edge-label { fill: var(--muted); font-size: 11.5px; font-family: "JetBrains Mono", Consolas, monospace; }
+    .dg-cloud-modeles .edge-label.fg { fill: var(--fg); }
+    .dg-cloud-modeles .edge-label-bg { fill: var(--bg); }
+    .dg-cloud-modeles .badge-done { fill: var(--ok); } .dg-cloud-modeles .badge-err { fill: var(--err); } .dg-cloud-modeles .badge-run { fill: var(--accent2); }
+    .dg-cloud-modeles .badge-ic { color: #fff; }
+    .dg-cloud-modeles .note { fill: var(--muted); font-size: 12px; }
+    .dg-cloud-modeles .fg { fill: var(--fg); }
+    .dg-cloud-modeles .strong { font-weight: 600; }
+    .dg-cloud-modeles .title { fill: var(--fg); font-size: 15px; font-weight: 600; }
+    .dg-cloud-modeles .small { font-size: 11px; }
+    .dg-cloud-modeles .pill { fill: var(--surface2); }
+    .dg-cloud-modeles .pill-text { fill: var(--fg); font-size: 11.5px; font-weight: 600; }
+    .dg-cloud-modeles .pill.user { fill: var(--user); } .dg-cloud-modeles .pill.infra { fill: var(--infra); }
+    .dg-cloud-modeles .pill.user .pill-text, .dg-cloud-modeles .pill.infra .pill-text { fill: var(--nodefg); }
+    .dg-cloud-modeles .cross { stroke: var(--err); stroke-width: 3; stroke-linecap: round; }
+    @keyframes dg-cloud-modeles-flow { to { stroke-dashoffset: -34; } }
+    @media (prefers-reduced-motion: reduce) { .dg-cloud-modeles .edge.flow { animation: none; } }
+  </style>
+<defs>
+<marker id="dg-cloud-modeles-arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0 0 L10 5 L0 10 z" class="arrow "/></marker>
+<symbol id="dg-cloud-modeles-i-check" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="m5 12 5 5L20 7"/></symbol>
+<symbol id="dg-cloud-modeles-i-cross" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M6 6l12 12M18 6 6 18"/></symbol>
+<symbol id="dg-cloud-modeles-i-refresh" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M20 11a8 8 0 0 0-14.5-4.5L3 9M4 13a8 8 0 0 0 14.5 4.5L21 15"/><path d="M3 4v5h5M21 20v-5h-5"/></symbol>
+</defs>
+<rect class="bg" width="1000" height="350" rx="18"/>
+<g class="grp">
+<rect class="group" x="30" y="36" width="300" height="260" rx="16"/>
+<text class="group-title" x="44" y="56">IaaS · machine virtuelle</text>
+</g>
+<g class="grp">
+<rect class="group" x="350" y="36" width="300" height="260" rx="16"/>
+<text class="group-title" x="364" y="56">PaaS · conteneurs managés</text>
+</g>
+<g class="grp">
+<rect class="group" x="670" y="36" width="300" height="260" rx="16"/>
+<text class="group-title" x="684" y="56">Serverless · fonctions, endpoints</text>
+</g>
+<g class="node " data-id="a1">
+<rect class="box" fill="var(--user)" x="50" y="76" width="260" height="44" rx="12"/>
+<text class="label" x="180" y="102.33333333333333" text-anchor="middle" font-size="13">Votre application</text>
+</g>
+<g class="node " data-id="a2">
+<rect class="box" fill="var(--user)" x="50" y="130" width="260" height="44" rx="12"/>
+<text class="label" x="180" y="156.33333333333334" text-anchor="middle" font-size="13">Runtime et dépendances</text>
+</g>
+<g class="node " data-id="a3">
+<rect class="box" fill="var(--user)" x="50" y="184" width="260" height="44" rx="12"/>
+<text class="label" x="180" y="210.33333333333334" text-anchor="middle" font-size="13">Système d’exploitation</text>
+</g>
+<g class="node " data-id="a4">
+<rect class="box" fill="var(--infra)" x="50" y="238" width="260" height="44" rx="12"/>
+<text class="label" x="180" y="264.3333333333333" text-anchor="middle" font-size="13">Serveur, réseau, stockage</text>
+</g>
+<g class="node " data-id="b1">
+<rect class="box" fill="var(--user)" x="370" y="76" width="260" height="44" rx="12"/>
+<text class="label" x="500" y="102.33333333333333" text-anchor="middle" font-size="13">Votre application</text>
+</g>
+<g class="node " data-id="b2">
+<rect class="box" fill="var(--user)" x="370" y="130" width="260" height="44" rx="12"/>
+<text class="label" x="500" y="156.33333333333334" text-anchor="middle" font-size="13">Runtime et dépendances (votre image)</text>
+</g>
+<g class="node " data-id="b3">
+<rect class="box" fill="var(--infra)" x="370" y="184" width="260" height="44" rx="12"/>
+<text class="label" x="500" y="210.33333333333334" text-anchor="middle" font-size="13">Système d’exploitation</text>
+</g>
+<g class="node " data-id="b4">
+<rect class="box" fill="var(--infra)" x="370" y="238" width="260" height="44" rx="12"/>
+<text class="label" x="500" y="264.3333333333333" text-anchor="middle" font-size="13">Serveur, réseau, stockage</text>
+</g>
+<g class="node " data-id="c1">
+<rect class="box" fill="var(--user)" x="690" y="76" width="260" height="44" rx="12"/>
+<text class="label" x="820" y="102.33333333333333" text-anchor="middle" font-size="13">Votre application (code ou modèle)</text>
+</g>
+<g class="node " data-id="c2">
+<rect class="box" fill="var(--infra)" x="690" y="130" width="260" height="44" rx="12"/>
+<text class="label" x="820" y="156.33333333333334" text-anchor="middle" font-size="13">Runtime et dépendances</text>
+</g>
+<g class="node " data-id="c3">
+<rect class="box" fill="var(--infra)" x="690" y="184" width="260" height="44" rx="12"/>
+<text class="label" x="820" y="210.33333333333334" text-anchor="middle" font-size="13">Système d’exploitation</text>
+</g>
+<g class="node " data-id="c4">
+<rect class="box" fill="var(--infra)" x="690" y="238" width="260" height="44" rx="12"/>
+<text class="label" x="820" y="264.3333333333333" text-anchor="middle" font-size="13">Serveur, réseau, stockage</text>
+</g>
+<g><rect class="pill user" x="30" y="310" width="96" height="22" rx="11"/><text class="pill-text" x="78" y="325" text-anchor="middle">Vous gérez</text></g>
+<g><rect class="pill infra" x="140" y="310" width="117.60000000000001" height="22" rx="11"/><text class="pill-text" x="198.8" y="325" text-anchor="middle">Le cloud gère</text></g>
+<text class="note small" x="180" y="338" text-anchor="middle" font-size="12">Azure VM · Compute Engine</text>
+<text class="note small" x="500" y="338" text-anchor="middle" font-size="12">Container Apps · App Service · Cloud Run</text>
+<text class="note small" x="820" y="338" text-anchor="middle" font-size="12">Functions · endpoints Azure ML / Vertex AI</text>
+</svg>

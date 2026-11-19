@@ -1,0 +1,176 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1160 320" width="1160" height="320" class="dg dg-azure-ml-vs-vertex" role="img" aria-labelledby="dg-azure-ml-vs-vertex-t dg-azure-ml-vs-vertex-d">
+<title id="dg-azure-ml-vs-vertex-t">Azure ML et Vertex AI : les mêmes étapes, des noms différents</title>
+<desc id="dg-azure-ml-vs-vertex-d">Pour chaque étape du cycle de vie, le service correspondant chez Microsoft et chez Google.</desc>
+
+  <style>
+    .dg-azure-ml-vs-vertex {
+      --bg:#F4F6F9; --surface:#FFFFFF; --surface2:#E9EDF3; --fg:#17202B; --muted:#5D6B7D;
+      --line:#D3DAE4; --line2:#B9C3D1; --accent:#0E6E8E; --accent2:#D9731A; --ok:#1D8F5A; --err:#C73E3E;
+      --data:#6D4FD3; --code:#0E6E8E; --infra:#1D8F5A; --user:#B8471B; --ai:#B5338A; --neutral:#8B97A8;
+      --nodefg:#FFFFFF; --ghostfg:#17202B;
+      font-family: Inter, "Segoe UI", system-ui, sans-serif;
+    }
+    @media (prefers-color-scheme: dark) {
+      .dg-azure-ml-vs-vertex {
+        --bg:#0D141D; --surface:#141D29; --surface2:#1B2634; --fg:#E7ECF3; --muted:#9AA9BB;
+        --line:#2B3A4C; --line2:#3C4D62; --accent:#4FB3D9; --accent2:#F0A050; --ok:#3FC27F; --err:#F26B6B;
+        --data:#A08BF0; --code:#4FB3D9; --infra:#3FC27F; --user:#F08A5B; --ai:#E27AC0; --neutral:#6B7A8C;
+        --nodefg:#0D141D; --ghostfg:#E7ECF3;
+      }
+    }
+    .dg-azure-ml-vs-vertex .bg { fill: var(--bg); }
+    .dg-azure-ml-vs-vertex text { fill: var(--fg); }
+    .dg-azure-ml-vs-vertex .muted { fill: var(--muted); }
+    .dg-azure-ml-vs-vertex .label { fill: var(--nodefg); font-weight: 600; }
+    .dg-azure-ml-vs-vertex .sublabel { fill: var(--nodefg); opacity: .85; }
+    .dg-azure-ml-vs-vertex .ghost .box { fill: var(--surface); stroke: var(--line2); stroke-dasharray: 6 5; stroke-width: 1.6; }
+    .dg-azure-ml-vs-vertex .ghost .label, .dg-azure-ml-vs-vertex .ghost .sublabel { fill: var(--ghostfg); }
+    .dg-azure-ml-vs-vertex .ghost .ic { color: var(--muted); }
+    .dg-azure-ml-vs-vertex .ic { color: var(--nodefg); }
+    .dg-azure-ml-vs-vertex .group { fill: var(--surface); stroke: var(--line); stroke-width: 1.5; }
+    .dg-azure-ml-vs-vertex .group.dashed { fill: none; stroke: var(--line2); stroke-dasharray: 7 6; }
+    .dg-azure-ml-vs-vertex .group.tint-data { fill: color-mix(in srgb, var(--data) 8%, var(--surface)); }
+    .dg-azure-ml-vs-vertex .group.tint-infra { fill: color-mix(in srgb, var(--infra) 8%, var(--surface)); }
+    .dg-azure-ml-vs-vertex .group.tint-user { fill: color-mix(in srgb, var(--user) 8%, var(--surface)); }
+    .dg-azure-ml-vs-vertex .group.tint-code { fill: color-mix(in srgb, var(--code) 8%, var(--surface)); }
+    .dg-azure-ml-vs-vertex .group.tint-ai { fill: color-mix(in srgb, var(--ai) 8%, var(--surface)); }
+    .dg-azure-ml-vs-vertex .group-title { fill: var(--muted); font-size: 11px; font-weight: 600; letter-spacing: .08em; text-transform: uppercase; }
+    .dg-azure-ml-vs-vertex .edge { fill: none; stroke: var(--muted); stroke-width: 2.4; stroke-linecap: round; }
+    .dg-azure-ml-vs-vertex .edge.thin { stroke-width: 1.6; }
+    .dg-azure-ml-vs-vertex .edge.dashed { stroke-dasharray: 6 6; }
+    .dg-azure-ml-vs-vertex .edge.flow { stroke-dasharray: 9 8; animation: dg-azure-ml-vs-vertex-flow 1.1s linear infinite; }
+    .dg-azure-ml-vs-vertex .edge.slow { animation-duration: 2.2s; }
+    .dg-azure-ml-vs-vertex .edge.accent { stroke: var(--accent); }
+    .dg-azure-ml-vs-vertex .edge.warn { stroke: var(--accent2); }
+    .dg-azure-ml-vs-vertex .edge.ok { stroke: var(--ok); }
+    .dg-azure-ml-vs-vertex .edge.err { stroke: var(--err); }
+    .dg-azure-ml-vs-vertex .edge.data { stroke: var(--data); }
+    .dg-azure-ml-vs-vertex .edge.ai { stroke: var(--ai); }
+    .dg-azure-ml-vs-vertex .edge.lifeline { stroke: var(--line2); stroke-width: 1.5; stroke-dasharray: 4 5; }
+    .dg-azure-ml-vs-vertex .arrow { fill: var(--muted); }
+    .dg-azure-ml-vs-vertex .arrow.accent { fill: var(--accent); } .dg-azure-ml-vs-vertex .arrow.warn { fill: var(--accent2); }
+    .dg-azure-ml-vs-vertex .arrow.ok { fill: var(--ok); } .dg-azure-ml-vs-vertex .arrow.err { fill: var(--err); }
+    .dg-azure-ml-vs-vertex .arrow.data { fill: var(--data); } .dg-azure-ml-vs-vertex .arrow.ai { fill: var(--ai); }
+    .dg-azure-ml-vs-vertex .edge-label { fill: var(--muted); font-size: 11.5px; font-family: "JetBrains Mono", Consolas, monospace; }
+    .dg-azure-ml-vs-vertex .edge-label.fg { fill: var(--fg); }
+    .dg-azure-ml-vs-vertex .edge-label-bg { fill: var(--bg); }
+    .dg-azure-ml-vs-vertex .badge-done { fill: var(--ok); } .dg-azure-ml-vs-vertex .badge-err { fill: var(--err); } .dg-azure-ml-vs-vertex .badge-run { fill: var(--accent2); }
+    .dg-azure-ml-vs-vertex .badge-ic { color: #fff; }
+    .dg-azure-ml-vs-vertex .note { fill: var(--muted); font-size: 12px; }
+    .dg-azure-ml-vs-vertex .fg { fill: var(--fg); }
+    .dg-azure-ml-vs-vertex .strong { font-weight: 600; }
+    .dg-azure-ml-vs-vertex .title { fill: var(--fg); font-size: 15px; font-weight: 600; }
+    .dg-azure-ml-vs-vertex .small { font-size: 11px; }
+    .dg-azure-ml-vs-vertex .pill { fill: var(--surface2); }
+    .dg-azure-ml-vs-vertex .pill-text { fill: var(--fg); font-size: 11.5px; font-weight: 600; }
+    .dg-azure-ml-vs-vertex .pill.user { fill: var(--user); } .dg-azure-ml-vs-vertex .pill.infra { fill: var(--infra); }
+    .dg-azure-ml-vs-vertex .pill.user .pill-text, .dg-azure-ml-vs-vertex .pill.infra .pill-text { fill: var(--nodefg); }
+    .dg-azure-ml-vs-vertex .cross { stroke: var(--err); stroke-width: 3; stroke-linecap: round; }
+    @keyframes dg-azure-ml-vs-vertex-flow { to { stroke-dashoffset: -34; } }
+    @media (prefers-reduced-motion: reduce) { .dg-azure-ml-vs-vertex .edge.flow { animation: none; } }
+  </style>
+<defs>
+<marker id="dg-azure-ml-vs-vertex-arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0 0 L10 5 L0 10 z" class="arrow "/></marker>
+<symbol id="dg-azure-ml-vs-vertex-i-check" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="m5 12 5 5L20 7"/></symbol>
+<symbol id="dg-azure-ml-vs-vertex-i-cross" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M6 6l12 12M18 6 6 18"/></symbol>
+<symbol id="dg-azure-ml-vs-vertex-i-refresh" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M20 11a8 8 0 0 0-14.5-4.5L3 9M4 13a8 8 0 0 0 14.5 4.5L21 15"/><path d="M3 4v5h5M21 20v-5h-5"/></symbol>
+<symbol id="dg-azure-ml-vs-vertex-i-database" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><ellipse cx="12" cy="5" rx="8" ry="3"/><path d="M4 5v14c0 1.7 3.6 3 8 3s8-1.3 8-3V5"/><path d="M4 12c0 1.7 3.6 3 8 3s8-1.3 8-3"/></symbol>
+<symbol id="dg-azure-ml-vs-vertex-i-notebook" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="3" width="16" height="18" rx="2"/><path d="M8 3v18M12 8h5M12 12h5"/></symbol>
+<symbol id="dg-azure-ml-vs-vertex-i-model" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="5" r="2.2"/><circle cx="5" cy="19" r="2.2"/><circle cx="19" cy="19" r="2.2"/><circle cx="12" cy="13" r="2.2"/><path d="M12 7.2v3.6M10.4 14.6l-4 2.8M13.6 14.6l4 2.8"/></symbol>
+<symbol id="dg-azure-ml-vs-vertex-i-tag" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 3h8l10 10-8 8L3 11V3Z"/><path d="M7.5 7.5h.01"/></symbol>
+<symbol id="dg-azure-ml-vs-vertex-i-api" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 12h5M15 12h5"/><rect x="9" y="8" width="6" height="8" rx="1.5"/><path d="M4 8v8M20 8v8"/></symbol>
+<symbol id="dg-azure-ml-vs-vertex-i-eye" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7S2 12 2 12Z"/><circle cx="12" cy="12" r="3"/></symbol>
+</defs>
+<rect class="bg" width="1160" height="320" rx="18"/>
+<path class="edge flow" d="M270 106 C274 106, 274 106, 278 106" marker-end="url(#dg-azure-ml-vs-vertex-arrow)"/>
+<path class="edge flow" d="M270 236 C274 236, 274 236, 278 236" marker-end="url(#dg-azure-ml-vs-vertex-arrow)"/>
+<path class="edge flow" d="M442 106 C446 106, 446 106, 450 106" marker-end="url(#dg-azure-ml-vs-vertex-arrow)"/>
+<path class="edge flow" d="M442 236 C446 236, 446 236, 450 236" marker-end="url(#dg-azure-ml-vs-vertex-arrow)"/>
+<path class="edge flow" d="M614 106 C618 106, 618 106, 622 106" marker-end="url(#dg-azure-ml-vs-vertex-arrow)"/>
+<path class="edge flow" d="M614 236 C618 236, 618 236, 622 236" marker-end="url(#dg-azure-ml-vs-vertex-arrow)"/>
+<path class="edge flow" d="M786 106 C790 106, 790 106, 794 106" marker-end="url(#dg-azure-ml-vs-vertex-arrow)"/>
+<path class="edge flow" d="M786 236 C790 236, 790 236, 794 236" marker-end="url(#dg-azure-ml-vs-vertex-arrow)"/>
+<path class="edge flow" d="M958 106 C962 106, 962 106, 966 106" marker-end="url(#dg-azure-ml-vs-vertex-arrow)"/>
+<path class="edge flow" d="M958 236 C962 236, 962 236, 966 236" marker-end="url(#dg-azure-ml-vs-vertex-arrow)"/>
+<g class="node " data-id="a0">
+<rect class="box" fill="var(--data)" x="110" y="74" width="160" height="64" rx="12"/>
+<use class="ic" href="#dg-azure-ml-vs-vertex-i-database" x="124" y="94" width="24" height="24"/>
+<text class="label" x="158" y="104" font-size="13">Data assets</text>
+<text class="sublabel" x="158" y="118" font-size="10">datastores, versions</text>
+</g>
+<g class="node " data-id="v0">
+<rect class="box" fill="var(--data)" x="110" y="204" width="160" height="64" rx="12"/>
+<use class="ic" href="#dg-azure-ml-vs-vertex-i-database" x="124" y="224" width="24" height="24"/>
+<text class="label" x="158" y="234" font-size="13">Cloud Storage</text>
+<text class="sublabel" x="158" y="248" font-size="10">buckets, BigQuery</text>
+</g>
+<g class="node " data-id="a1">
+<rect class="box" fill="var(--code)" x="282" y="74" width="160" height="64" rx="12"/>
+<use class="ic" href="#dg-azure-ml-vs-vertex-i-notebook" x="296" y="94" width="24" height="24"/>
+<text class="label" x="330" y="104" font-size="13">Compute instance</text>
+<text class="sublabel" x="330" y="118" font-size="10">notebooks, VS Code</text>
+</g>
+<g class="node " data-id="v1">
+<rect class="box" fill="var(--code)" x="282" y="204" width="160" height="64" rx="12"/>
+<use class="ic" href="#dg-azure-ml-vs-vertex-i-notebook" x="296" y="224" width="24" height="24"/>
+<text class="label" x="330" y="234" font-size="13">Workbench</text>
+<text class="sublabel" x="330" y="248" font-size="10">notebooks managés</text>
+</g>
+<g class="node " data-id="a2">
+<rect class="box" fill="var(--code)" x="454" y="74" width="160" height="64" rx="12"/>
+<use class="ic" href="#dg-azure-ml-vs-vertex-i-model" x="468" y="94" width="24" height="24"/>
+<text class="label" x="502" y="104" font-size="13">Jobs</text>
+<text class="sublabel" x="502" y="118" font-size="10">scripts, AutoML</text>
+</g>
+<g class="node " data-id="v2">
+<rect class="box" fill="var(--code)" x="454" y="204" width="160" height="64" rx="12"/>
+<use class="ic" href="#dg-azure-ml-vs-vertex-i-model" x="468" y="224" width="24" height="24"/>
+<text class="label" x="502" y="234" font-size="13">Training</text>
+<text class="sublabel" x="502" y="248" font-size="10">custom, AutoML</text>
+</g>
+<g class="node " data-id="a3">
+<rect class="box" fill="var(--data)" x="626" y="74" width="160" height="64" rx="12"/>
+<use class="ic" href="#dg-azure-ml-vs-vertex-i-tag" x="640" y="94" width="24" height="24"/>
+<text class="label" x="674" y="104" font-size="13">Model Registry</text>
+<text class="sublabel" x="674" y="118" font-size="10">format MLflow intégré</text>
+</g>
+<g class="node " data-id="v3">
+<rect class="box" fill="var(--data)" x="626" y="204" width="160" height="64" rx="12"/>
+<use class="ic" href="#dg-azure-ml-vs-vertex-i-tag" x="640" y="224" width="24" height="24"/>
+<text class="label" x="674" y="234" font-size="13">Model Registry</text>
+<text class="sublabel" x="674" y="248" font-size="10">versions, évaluation</text>
+</g>
+<g class="node " data-id="a4">
+<rect class="box" fill="var(--infra)" x="798" y="74" width="160" height="64" rx="12"/>
+<use class="ic" href="#dg-azure-ml-vs-vertex-i-api" x="812" y="94" width="24" height="24"/>
+<text class="label" x="846" y="104" font-size="13">Online endpoint</text>
+<text class="sublabel" x="846" y="118" font-size="10">managé, autoscale</text>
+</g>
+<g class="node " data-id="v4">
+<rect class="box" fill="var(--infra)" x="798" y="204" width="160" height="64" rx="12"/>
+<use class="ic" href="#dg-azure-ml-vs-vertex-i-api" x="812" y="224" width="24" height="24"/>
+<text class="label" x="846" y="234" font-size="13">Endpoint</text>
+<text class="sublabel" x="846" y="248" font-size="10">prédiction en ligne</text>
+</g>
+<g class="node " data-id="a5">
+<rect class="box" fill="var(--infra)" x="970" y="74" width="160" height="64" rx="12"/>
+<use class="ic" href="#dg-azure-ml-vs-vertex-i-eye" x="984" y="94" width="24" height="24"/>
+<text class="label" x="1018" y="104" font-size="13">Monitoring</text>
+<text class="sublabel" x="1018" y="118" font-size="10">dérive des données</text>
+</g>
+<g class="node " data-id="v5">
+<rect class="box" fill="var(--infra)" x="970" y="204" width="160" height="64" rx="12"/>
+<use class="ic" href="#dg-azure-ml-vs-vertex-i-eye" x="984" y="224" width="24" height="24"/>
+<text class="label" x="1018" y="234" font-size="13">Model Monitoring</text>
+<text class="sublabel" x="1018" y="248" font-size="10">dérive, alertes</text>
+</g>
+<text class="note small strong" x="190" y="50" text-anchor="middle" font-size="12">Données</text>
+<text class="note small strong" x="362" y="50" text-anchor="middle" font-size="12">Exploration</text>
+<text class="note small strong" x="534" y="50" text-anchor="middle" font-size="12">Entraînement</text>
+<text class="note small strong" x="706" y="50" text-anchor="middle" font-size="12">Registre</text>
+<text class="note small strong" x="878" y="50" text-anchor="middle" font-size="12">Déploiement</text>
+<text class="note small strong" x="1050" y="50" text-anchor="middle" font-size="12">Supervision</text>
+<text class="note title" x="20" y="110" text-anchor="start" font-size="12">Azure ML</text>
+<text class="note title" x="20" y="240" text-anchor="start" font-size="12">Vertex AI</text>
+<text class="note" x="580" y="304" text-anchor="middle" font-size="12">Les deux acceptent un conteneur Docker personnalisé : ce que vous construisez en séance 2 s’y déploie tel quel.</text>
+</svg>

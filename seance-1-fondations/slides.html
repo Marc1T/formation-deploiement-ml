@@ -1,0 +1,589 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Séance 1 · Du notebook au projet reproductible</title>
+<meta name="description" content="Formation Déployer un modèle ML et un site web · Séance 1 : Git, uv, DVC, MLflow">
+<link rel="stylesheet" href="../assets/css/fonts.css">
+<link rel="stylesheet" href="../assets/vendor/reveal.js/dist/reset.css">
+<link rel="stylesheet" href="../assets/vendor/reveal.js/dist/reveal.css">
+<link rel="stylesheet" href="../assets/css/theme.css">
+<link rel="stylesheet" href="../assets/css/animations.css">
+<link rel="stylesheet" href="../assets/css/print.css">
+</head>
+<body>
+<div class="reveal">
+<div class="slides">
+
+<!-- ============================================================ Titre -->
+<section class="title-slide">
+  <p class="eyebrow">Déployer un modèle ML et un site web · Séance 1 / 3</p>
+  <h1>Du notebook au projet reproductible</h1>
+  <p class="subtitle">Git, uv, DVC et MLflow : rendre un modèle réinstallable, relançable et comparable par n'importe qui.</p>
+  <div class="meta">
+    <span><i data-icon="clock"></i> 3 heures</span>
+    <span><i data-icon="flask"></i> 3 labs</span>
+    <span><i data-icon="user"></i> Cellule Info CEAM</span>
+  </div>
+  <div class="pipeline" data-fragments="false" data-compact="true" data-steps='[
+    {"label":"Données","icon":"database","kind":"data"},
+    {"label":"Entraînement","icon":"model","kind":"code"},
+    {"label":"Modèle","icon":"package","kind":"data"},
+    {"label":"API","icon":"api","kind":"infra","state":"todo"},
+    {"label":"Site web","icon":"browser","kind":"user","state":"todo"},
+    {"label":"Cloud","icon":"cloud","kind":"infra","state":"todo"}]'></div>
+</section>
+
+<!-- ============================================================ Pourquoi -->
+<section>
+  <p class="eyebrow">Introduction</p>
+  <h2>Pourquoi déployer ?</h2>
+  <div class="cols cols-3">
+    <div class="card fragment" data-kind="user">
+      <h3><i data-icon="user"></i> Un modèle inutilisé ne vaut rien</h3>
+      <p>Tant qu'il vit dans un notebook, seul son auteur peut s'en servir. La valeur apparaît quand quelqu'un d'autre peut poser une question et obtenir une réponse.</p>
+    </div>
+    <div class="card fragment" data-kind="data">
+      <h3><i data-icon="refresh"></i> Reproductible ou perdu</h3>
+      <p>« Ça marchait la semaine dernière » : sans versions figées, sans données versionnées, le résultat n'est pas reproductible, donc pas fiable.</p>
+    </div>
+    <div class="card fragment" data-kind="infra">
+      <h3><i data-icon="rocket"></i> Du code au service</h3>
+      <p>Un service tourne sans vous : il démarre seul, répond à des requêtes, se met à jour. Cela demande une chaîne d'outils, pas un geste héroïque.</p>
+    </div>
+  </div>
+</section>
+
+<section>
+  <p class="eyebrow">Introduction</p>
+  <h2>La chaîne complète</h2>
+  <div class="pipeline" data-start="1" data-steps='[
+    {"label":"Données","sub":"CSV, base","icon":"database","kind":"data","edge":"nettoyage"},
+    {"label":"Entraînement","sub":"script, pas notebook","icon":"model","kind":"code","edge":"artefact"},
+    {"label":"Modèle","sub":"versionné : joblib + MLflow","icon":"package","kind":"data","edge":"charge"},
+    {"label":"API","sub":"FastAPI","icon":"api","kind":"infra","edge":"JSON"},
+    {"label":"Site web","sub":"Streamlit","icon":"browser","kind":"user","edge":"déploie"},
+    {"label":"Cloud","sub":"Azure, GCP","icon":"cloud","kind":"infra"}]'></div>
+  <div class="cols cols-3 mt">
+    <div class="fragment"><span class="badge">Séance 1</span> <span class="small">reproductibilité : uv, DVC, MLflow</span></div>
+    <div class="fragment"><span class="badge">Séance 2</span> <span class="small">application : FastAPI, Streamlit, Docker, CI</span></div>
+    <div class="fragment"><span class="badge">Séance 3</span> <span class="small">production : Streamlit Cloud, Azure, GCP, Gemini</span></div>
+  </div>
+</section>
+
+<section>
+  <p class="eyebrow">Introduction</p>
+  <h2>Aujourd'hui, trois questions</h2>
+  <table>
+    <thead><tr><th>Question</th><th>Outil</th><th>Ce qu'il versionne</th><th>Lab</th></tr></thead>
+    <tbody>
+      <tr><td>Quel code, quelles versions de bibliothèques ?</td><td><span class="tool"><i data-icon="package"></i> uv</span> + Git</td><td>le code, <code>pyproject.toml</code>, <code>uv.lock</code></td><td>1</td></tr>
+      <tr class="fragment"><td>Quelles données, quel pipeline ?</td><td><span class="tool" data-kind="data"><i data-icon="database"></i> DVC</span></td><td>les fichiers de données et de modèle, le graphe des étapes</td><td>2</td></tr>
+      <tr class="fragment"><td>Quelle expérience a donné quel résultat ?</td><td><span class="tool" data-kind="data"><i data-icon="chart"></i> MLflow</span></td><td>paramètres, métriques, artefacts de chaque exécution</td><td>3</td></tr>
+    </tbody>
+  </table>
+  <p class="small mt">Public hétérogène : chaque lab a un parcours <span class="star">★</span> pour tous et un parcours <span class="star">★★</span> pour aller plus loin.</p>
+</section>
+
+<!-- ============================================================ 01 Notebook ou projet -->
+<section class="section-slide">
+  <div class="num">01</div>
+  <div>
+    <p class="eyebrow">Partie 1</p>
+    <h2>Notebook ou projet ?</h2>
+    <p>Ce que le notebook ne sait pas faire, et ce qu'on met à la place.</p>
+  </div>
+</section>
+
+<section>
+  <p class="eyebrow">Notebook ou projet</p>
+  <h2 class="plain">Quatre symptômes, quatre remèdes</h2>
+  <figure>
+    <img src="../assets/diagrams/notebook-vs-projet.svg" alt="À gauche les problèmes du notebook seul, à droite ce qui les remplace dans un projet structuré">
+  </figure>
+</section>
+
+<!-- ============================================================ 02 Git -->
+<section class="section-slide">
+  <div class="num">02</div>
+  <div>
+    <p class="eyebrow">Partie 2 · rappel</p>
+    <h2>Git et GitHub en 20 minutes</h2>
+    <p>Le minimum pour versionner le code et préparer l'intégration continue.</p>
+  </div>
+</section>
+
+<section>
+  <p class="eyebrow">Git express</p>
+  <h2>Git en cinq commandes</h2>
+  <div class="term">
+    <div class="bar"><i></i><i></i><i></i></div>
+    <div class="line fragment"><span class="prompt">$ </span><span class="cmd">git init -b main</span></div>
+    <div class="line fragment"><span class="out">Initialized empty Git repository in ./diabete-lab/.git/</span></div>
+    <div class="line fragment"><span class="prompt">$ </span><span class="cmd">git status</span></div>
+    <div class="line fragment"><span class="out">Untracked files: pyproject.toml  src/  README.md</span></div>
+    <div class="line fragment"><span class="prompt">$ </span><span class="cmd">git add .</span></div>
+    <div class="line fragment"><span class="prompt">$ </span><span class="cmd">git commit -m "Projet initial"</span></div>
+    <div class="line fragment"><span class="out">[main (root-commit) 3f2a1c9] Projet initial · 4 files changed</span></div>
+    <div class="line fragment"><span class="prompt">$ </span><span class="cmd">git log --oneline</span></div>
+    <div class="line fragment"><span class="ok">3f2a1c9</span><span class="out"> Projet initial</span></div>
+  </div>
+  <p class="small">Un commit est un instantané nommé de tout le projet. On y revient, on le compare, on le partage.</p>
+</section>
+
+<section>
+  <p class="eyebrow">Git express</p>
+  <h2>Publier sur GitHub et trois réflexes</h2>
+  <div class="cols cols-12">
+    <div>
+      <pre data-title="terminal"><code class="language-bash" data-trim>git remote add origin https://github.com/&lt;vous&gt;/&lt;depot&gt;.git
+git push -u origin main</code></pre>
+      <p class="small">Créez d'abord un dépôt vide sur github.com. Authentification : GitHub CLI (<code>gh auth login</code>) ou jeton d'accès.</p>
+    </div>
+    <div class="stack">
+      <div class="callout fragment"><i data-icon="file"></i><p><strong>Un <code>.gitignore</code> dès le début.</strong> <code>.venv/</code>, <code>__pycache__/</code>, <code>.env</code>, <code>mlruns/</code>, et les gros fichiers de données.</p></div>
+      <div class="callout fragment"><i data-icon="tag"></i><p><strong>Des commits petits et nommés.</strong> « Ajoute l'étape prepare » vaut mieux que « maj ».</p></div>
+      <div class="callout warn fragment"><i data-icon="lock"></i><p><strong>Jamais de secret dans Git.</strong> Une clé commitée est compromise, même supprimée au commit suivant.</p></div>
+    </div>
+  </div>
+</section>
+
+<!-- ============================================================ 03 uv -->
+<section class="section-slide">
+  <div class="num">03</div>
+  <div>
+    <p class="eyebrow">Partie 3</p>
+    <h2>uv : Python et dépendances reproductibles</h2>
+    <p>Déclarer ce qu'on veut, figer ce qu'on a, exécuter au bon endroit.</p>
+  </div>
+</section>
+
+<section>
+  <p class="eyebrow">uv</p>
+  <h2>Le problème avec <code>pip install</code></h2>
+  <div class="compare">
+    <div class="card dashed">
+      <h3><i data-icon="terminal"></i> Aujourd'hui, chez vous</h3>
+      <pre><code class="language-bash" data-trim>pip install pandas scikit-learn
+# pandas 2.3.1, scikit-learn 1.7.2 … ou pas</code></pre>
+      <p class="fragment">Six mois plus tard, sur une autre machine : d'autres versions, une API qui a changé, un modèle qui ne se charge plus.</p>
+    </div>
+    <div class="vs">vs</div>
+    <div class="card accent">
+      <h3><i data-icon="lock"></i> Avec uv</h3>
+      <pre><code class="language-bash" data-trim>uv add pandas scikit-learn
+# écrit pyproject.toml ET uv.lock</code></pre>
+      <p class="fragment">Partout, toujours : <code>uv sync</code> réinstalle exactement les mêmes versions, jusqu'aux dépendances des dépendances.</p>
+    </div>
+  </div>
+  <p class="small mt fragment">Deux notions à séparer : <strong>ce que vous demandez</strong> (pandas ≥ 2.2) et <strong>ce qui est installé</strong> (pandas 2.3.1, numpy 2.2.6, …).</p>
+</section>
+
+<section>
+  <p class="eyebrow">uv</p>
+  <h2 class="plain">Le cycle : déclarer, figer, installer, exécuter</h2>
+  <figure>
+    <img src="../assets/diagrams/uv-workflow.svg" alt="pyproject.toml déclare, uv.lock fige, uv sync installe dans .venv, uv run exécute ; un collègue ou la CI obtient le même environnement">
+  </figure>
+  <table class="compact mt-s">
+    <thead><tr><th>Élément</th><th>Rôle</th><th>Dans Git ?</th></tr></thead>
+    <tbody>
+      <tr><td><code>pyproject.toml</code></td><td>déclare le projet et ses dépendances</td><td>oui</td></tr>
+      <tr><td><code>uv.lock</code></td><td>fige toutes les versions résolues</td><td>oui</td></tr>
+      <tr><td><code>.python-version</code></td><td>version de Python du projet</td><td>oui</td></tr>
+      <tr><td><code>.venv/</code></td><td>l'environnement installé</td><td>non, régénéré par <code>uv sync</code></td></tr>
+    </tbody>
+  </table>
+</section>
+
+<section>
+  <p class="eyebrow">uv</p>
+  <h2>Les commandes</h2>
+  <pre data-title="terminal"><code class="language-bash" data-trim data-line-numbers="1-2|3-6|7-9|10-12">uv init mon-projet            # nouveau projet : pyproject.toml, .python-version, README
+cd mon-projet
+uv add pandas scikit-learn    # ajoute, résout, met à jour uv.lock, installe
+uv add --dev pytest ruff      # dépendances de développement
+uv add --group api fastapi    # dépendances dans un groupe nommé
+uv remove pandas
+uv sync                       # installe exactement uv.lock (crée .venv au besoin)
+uv run python train.py        # exécute dans l'environnement, sans l'activer
+uv run pytest
+uv lock --upgrade-package pandas   # met à jour une dépendance, et seulement elle
+uv python install 3.11        # installe un interpréteur
+uvx ruff check .              # lance un outil sans l'ajouter au projet</code></pre>
+  <div class="callout ok fragment"><i data-icon="play"></i><p><strong><code>uv run</code> est la commande à retenir.</strong> Elle garantit la bonne version de Python et des bibliothèques, sur votre machine comme en CI ou dans Docker.</p></div>
+</section>
+
+<section>
+  <p class="eyebrow">uv · projet fil rouge</p>
+  <h2>Des groupes pour des images légères</h2>
+  <div class="cols cols-12">
+    <pre data-title="pyproject.toml"><code class="language-ini" data-trim>[project]
+dependencies = ["pandas>=2.2", "scikit-learn>=1.5", "joblib>=1.4", "pyyaml>=6.0"]
+
+[dependency-groups]
+api   = ["fastapi>=0.115", "uvicorn[standard]>=0.30", "pydantic-settings>=2.4"]
+app   = ["streamlit>=1.38", "httpx>=0.27", "google-genai>=1.0"]
+mlops = ["mlflow>=3.0", "dvc>=3.50"]
+dev   = ["pytest>=8.3", "ruff>=0.6"]
+
+[tool.uv]
+default-groups = ["api", "app", "mlops", "dev"]</code></pre>
+    <div class="stack">
+      <div class="card"><h3><i data-icon="user"></i> En développement</h3><p><code>uv sync</code> installe tout : confortable.</p></div>
+      <div class="card fragment" data-kind="infra"><h3><i data-icon="layers"></i> Dans Docker (séance 2)</h3><p><code>uv sync --no-default-groups --group api</code> : l'image de l'API n'embarque ni Streamlit ni MLflow.</p></div>
+      <div class="card fragment" data-kind="data"><h3><i data-icon="database"></i> Le cœur</h3><p>Entraîner et prédire ne demandent que pandas et scikit-learn.</p></div>
+    </div>
+  </div>
+</section>
+
+<section>
+  <p class="eyebrow">uv</p>
+  <h2>Pièges fréquents</h2>
+  <div class="stack">
+    <div class="callout warn fragment"><i data-icon="warning"></i><p><strong><code>ModuleNotFoundError</code> alors que c'est « installé »</strong> : vous avez lancé <code>python</code> au lieu de <code>uv run python</code>. Mauvais environnement.</p></div>
+    <div class="callout warn fragment"><i data-icon="branch"></i><p><strong><code>uv.lock</code> en conflit après un merge</strong> : <code>uv lock</code> le régénère proprement, puis commit.</p></div>
+    <div class="callout warn fragment"><i data-icon="refresh"></i><p><strong><code>uv sync</code> recrée <code>.venv</code></strong> quand la version de Python change : normal, et rapide grâce au cache.</p></div>
+    <div class="callout fragment"><i data-icon="file"></i><p><strong><code>error: Failed to build</code> « Readme file does not exist »</strong> : <code>pyproject.toml</code> référence un README absent. Créez-le.</p></div>
+  </div>
+</section>
+
+<section class="lab" data-minutes="25">
+  <p class="eyebrow alt">À vous de jouer · Lab 1</p>
+  <h2>Transformer un notebook en projet uv</h2>
+  <div class="cols cols-21">
+    <ol class="steps">
+      <li><strong>Créer le projet</strong> <code>uv init --package diabete-lab</code>, <code>uv python pin 3.11</code></li>
+      <li><strong>Déclarer les dépendances</strong> pandas, scikit-learn, joblib, pyyaml ; pytest et ruff en dev</li>
+      <li><strong>Ajouter le code</strong> <code>src/diabete_lab/train.py</code> et les données Pima</li>
+      <li><strong>En faire une commande</strong> <code>[project.scripts]</code> → <code>uv run diabete-train</code></li>
+      <li><strong>Prouver la reproductibilité</strong> copier, supprimer <code>.venv</code>, <code>uv sync</code></li>
+      <li><strong>Git</strong> <code>.gitignore</code>, premier commit</li>
+    </ol>
+    <div class="card accent">
+      <h3><i data-icon="terminal"></i> Démarrage</h3>
+      <pre><code class="language-bash" data-trim>uv init --package diabete-lab
+cd diabete-lab
+uv add pandas scikit-learn joblib pyyaml
+uv add --dev pytest ruff</code></pre>
+      <p><span class="badge">★ étapes 1 à 6</span> <span class="badge alt">★★ ruff, un test, uvx</span></p>
+      <p class="small">Guide détaillé : <code>labs/lab-01-uv.md</code></p>
+    </div>
+  </div>
+</section>
+
+<!-- ============================================================ 04 DVC -->
+<section class="section-slide">
+  <div class="num">04</div>
+  <div>
+    <p class="eyebrow">Partie 4</p>
+    <h2>DVC : versionner les données et le pipeline</h2>
+    <p>Git pour le code, DVC pour tout ce qui est lourd ou régénéré.</p>
+  </div>
+</section>
+
+<section>
+  <p class="eyebrow">DVC</p>
+  <h2>Pourquoi pas Git pour les données ?</h2>
+  <div class="cols cols-12">
+    <div class="stack">
+      <div><div class="big">Ko</div><p>Git est fait pour du texte : il stocke chaque version, calcule des diffs lisibles.</p></div>
+      <div class="fragment"><div class="big c-err">Go</div><p>Un CSV de 500 Mo ou un modèle de 2 Go fait exploser le dépôt et ne se « diffe » pas.</p></div>
+    </div>
+    <figure class="fragment">
+      <img src="../assets/diagrams/git-vs-dvc.svg" alt="Git stocke le code et un pointeur de deux lignes ; DVC synchronise le contenu réel avec un remote">
+    </figure>
+  </div>
+  <p class="small fragment">DVC garde dans Git un <strong>pointeur</strong> (hash + taille) et range le contenu dans un <strong>remote</strong> : dossier partagé, Azure Blob, GCS, S3.</p>
+</section>
+
+<section>
+  <p class="eyebrow">DVC</p>
+  <h2>Versionner un fichier</h2>
+  <div class="term">
+    <div class="bar"><i></i><i></i><i></i></div>
+    <div class="line fragment"><span class="prompt">$ </span><span class="cmd">uv run dvc init --subdir</span></div>
+    <div class="line fragment"><span class="prompt">$ </span><span class="cmd">uv run dvc add data/raw/diabetes.csv</span></div>
+    <div class="line fragment"><span class="out">100% Adding...  → data/raw/diabetes.csv.dvc créé, data/raw/.gitignore mis à jour</span></div>
+    <div class="line fragment"><span class="prompt">$ </span><span class="cmd">cat data/raw/diabetes.csv.dvc</span></div>
+    <div class="line fragment"><span class="out">outs:
+- md5: 9c4e8a…   size: 23873   path: diabetes.csv</span></div>
+    <div class="line fragment"><span class="prompt">$ </span><span class="cmd">git add data/raw &amp;&amp; git commit -m "Données brutes suivies par DVC"</span></div>
+    <div class="line fragment"><span class="prompt">$ </span><span class="cmd">uv run dvc remote add -d partage ../dvc-remote</span></div>
+    <div class="line fragment"><span class="prompt">$ </span><span class="cmd">uv run dvc push</span><span class="out">      # et dvc pull sur une autre machine</span></div>
+  </div>
+  <p class="small">Le fichier <code>.dvc</code> fait deux lignes utiles : Git le versionne, DVC retrouve le contenu correspondant dans le remote.</p>
+</section>
+
+<section>
+  <p class="eyebrow">DVC</p>
+  <h2 class="plain">Le vrai gain : décrire le pipeline</h2>
+  <figure>
+    <img src="../assets/diagrams/dvc-dag.svg" alt="Le pipeline DVC du projet fil rouge : prepare, train, evaluate, reliés par leurs fichiers et paramétrés par params.yaml">
+  </figure>
+  <p class="small">Chaque étape déclare ses entrées, ses sorties et ses paramètres. DVC en déduit le graphe et sait <strong>quoi relancer</strong>.</p>
+</section>
+
+<section>
+  <p class="eyebrow">DVC · projet fil rouge</p>
+  <h2>dvc.yaml et params.yaml</h2>
+  <div class="cols">
+    <pre data-title="dvc.yaml (extrait)"><code class="language-yaml" data-trim data-line-numbers="1-3|4-6|7-8|9-10|11-14">stages:
+  train:
+    cmd: python -m diabetes_ml.train
+    deps:
+      - data/processed/train.csv
+      - src/diabetes_ml/train.py
+    params:
+      - train
+    outs:
+      - models/model.joblib
+  evaluate:
+    metrics:
+      - reports/metrics.json:
+          cache: false</code></pre>
+    <div>
+      <pre data-title="params.yaml"><code class="language-yaml" data-trim>train:
+  model: random_forest
+  n_estimators: 200
+  max_depth: 6</code></pre>
+      <div class="callout fragment"><i data-icon="refresh"></i><p>Changez <code>max_depth</code>, relancez <code>dvc repro</code> : seule l'étape <code>train</code> et ce qui en dépend se relancent.</p></div>
+    </div>
+  </div>
+</section>
+
+<section>
+  <p class="eyebrow">DVC</p>
+  <h2>Ce que fait <code>dvc repro</code></h2>
+  <div class="pipeline" data-fragments="false" data-steps='[
+    {"label":"prepare","sub":"inchangé : sauté","icon":"gear","kind":"code","state":"done","edge":"train.csv"},
+    {"label":"train","sub":"params modifiés : relancé","icon":"model","kind":"code","state":"running","edge":"model.joblib"},
+    {"label":"evaluate","sub":"dépend de train : relancé","icon":"flask","kind":"code","state":"todo","edge":"metrics.json"},
+    {"label":"reports/","sub":"dvc metrics show","icon":"chart","kind":"data","state":"todo"}]'></div>
+  <table class="compact mt">
+    <thead><tr><th>Commande</th><th>Rôle</th></tr></thead>
+    <tbody>
+      <tr><td><code>uv run dvc repro</code></td><td>exécute ce qui doit l'être, et seulement ça</td></tr>
+      <tr><td><code>uv run dvc dag</code></td><td>affiche le graphe des étapes</td></tr>
+      <tr><td><code>uv run dvc metrics show</code> / <code>diff</code></td><td>les métriques, et leur évolution depuis le dernier commit</td></tr>
+      <tr><td><code>uv run dvc params diff</code></td><td>quels paramètres ont changé</td></tr>
+      <tr><td><code>uv run dvc exp run --set-param train.max_depth=8</code></td><td>une variante sans toucher aux fichiers</td></tr>
+    </tbody>
+  </table>
+  <p class="small"><code>dvc.lock</code> enregistre les hash des entrées et sorties : c'est lui qui sait si une étape est à jour. Il se commite.</p>
+</section>
+
+<section class="lab" data-minutes="35">
+  <p class="eyebrow alt">À vous de jouer · Lab 2</p>
+  <h2>Un pipeline reproductible avec DVC</h2>
+  <div class="cols cols-21">
+    <ol class="steps">
+      <li><strong>Installer et initialiser</strong> <code>uv add --group mlops dvc</code>, <code>uv run dvc init</code></li>
+      <li><strong>Versionner les données</strong> <code>dvc add</code>, remote local, <code>dvc push</code>, puis simuler un collègue avec <code>dvc pull</code></li>
+      <li><strong>Découper en étapes</strong> <code>prepare.py</code> et <code>train.py</code>, paramètres dans <code>params.yaml</code></li>
+      <li><strong>Décrire le pipeline</strong> <code>dvc.yaml</code> avec deps, params, outs, metrics</li>
+      <li><strong>Constater la mise en cache</strong> changer <code>max_depth</code>, <code>dvc repro</code>, <code>params diff</code>, <code>metrics diff</code></li>
+    </ol>
+    <div class="card accent">
+      <h3><i data-icon="terminal"></i> Démarrage</h3>
+      <pre><code class="language-bash" data-trim>uv add --group mlops dvc
+uv run dvc init
+uv run dvc add data/raw/diabetes.csv
+uv run dvc remote add -d local ../dvc-remote</code></pre>
+      <p><span class="badge">★ étapes 1 à 5</span> <span class="badge alt">★★ dvc exp, plots, remote cloud</span></p>
+      <p class="small">Guide détaillé : <code>labs/lab-02-dvc.md</code></p>
+    </div>
+  </div>
+</section>
+
+<!-- ============================================================ 05 MLflow -->
+<section class="section-slide">
+  <div class="num">05</div>
+  <div>
+    <p class="eyebrow">Partie 5</p>
+    <h2>MLflow : tracer et comparer les expériences</h2>
+    <p>Chaque entraînement laisse une trace : paramètres, métriques, modèle.</p>
+  </div>
+</section>
+
+<section>
+  <p class="eyebrow">MLflow</p>
+  <h2>Dix entraînements plus tard…</h2>
+  <div class="cols">
+    <div class="term">
+      <div class="bar"><i></i><i></i><i></i></div>
+      <div class="line"><span class="prompt">$ </span><span class="cmd">ls models/</span></div>
+      <div class="line fragment"><span class="out">model.pkl</span></div>
+      <div class="line fragment"><span class="out">model_v2.pkl</span></div>
+      <div class="line fragment"><span class="out">model_v2_final.pkl</span></div>
+      <div class="line fragment"><span class="out">model_v2_final_OK.pkl</span></div>
+      <div class="line fragment"><span class="err">model_depth12_test_0.79_vraiment_final.pkl</span></div>
+    </div>
+    <div class="stack">
+      <p class="lead fragment">Lequel avait 0,79 d'AUC ? Avec quels paramètres ? Sur quelles données ?</p>
+      <div class="callout fragment"><i data-icon="chart"></i><p>MLflow enregistre chaque exécution (<strong>run</strong>) dans une <strong>expérience</strong> : paramètres, métriques, artefacts, et le modèle lui-même.</p></div>
+    </div>
+  </div>
+</section>
+
+<section>
+  <p class="eyebrow">MLflow</p>
+  <h2>Les notions</h2>
+  <div class="cols cols-3">
+    <div class="card fragment" data-kind="data"><h3><i data-icon="list"></i> Expérience</h3><p>Un dossier de runs qui répondent à la même question : <code>diabetes-risk</code>.</p></div>
+    <div class="card fragment" data-kind="data"><h3><i data-icon="play"></i> Run</h3><p>Une exécution : un identifiant unique, une date, un état, et tout ce qui suit.</p></div>
+    <div class="card fragment" data-kind="code"><h3><i data-icon="gear"></i> Paramètres et métriques</h3><p><code>log_params</code>, <code>log_metrics</code> : ce qu'on a essayé, ce qu'on a obtenu.</p></div>
+    <div class="card fragment" data-kind="data"><h3><i data-icon="package"></i> Artefacts et modèle</h3><p>Fichiers attachés au run : le modèle, un graphique, un rapport.</p></div>
+    <div class="card fragment" data-kind="infra"><h3><i data-icon="tag"></i> Registre</h3><p>Un nom et une version pour le modèle qui part en production : <code>diabetes-risk</code> v3.</p></div>
+    <div class="card fragment" data-kind="infra"><h3><i data-icon="server"></i> Tracking</h3><p>Où tout cela est stocké : <code>sqlite:///mlflow.db</code> en local, un serveur partagé en équipe.</p></div>
+  </div>
+</section>
+
+<section>
+  <p class="eyebrow">MLflow · projet fil rouge</p>
+  <h2>Dans le code</h2>
+  <pre data-title="src/diabetes_ml/train.py (extrait)"><code class="language-python" data-trim data-line-numbers="1-4|6-7|8-10|11">import mlflow, mlflow.sklearn
+
+mlflow.set_tracking_uri("sqlite:///mlflow.db")      # où stocker
+mlflow.set_experiment("diabetes-risk")
+
+with mlflow.start_run(run_name="random_forest") as run:
+    mlflow.log_params({"n_estimators": 200, "max_depth": 6})
+    pipe, metrics = fit(train_df, params)
+    mlflow.log_metrics(metrics)                       # cv_accuracy, cv_roc_auc, …
+    mlflow.sklearn.log_model(pipe, name="model", input_example=example)
+    print(run.info.run_id)                            # identifiant unique du run</code></pre>
+  <div class="cols mt-s">
+    <div class="callout fragment"><i data-icon="sparkle"></i><p><code>mlflow.sklearn.autolog()</code> enregistre tout seul les hyperparamètres et métriques de scikit-learn. Pratique pour démarrer, moins lisible qu'un log explicite.</p></div>
+    <div class="callout ok fragment"><i data-icon="branch"></i><p>Dans le fil rouge, <code>dvc repro</code> relance <code>train</code>, qui crée un run : DVC orchestre, MLflow trace.</p></div>
+  </div>
+</section>
+
+<section>
+  <p class="eyebrow">MLflow</p>
+  <h2 class="plain">Tracer, comparer, enregistrer, servir</h2>
+  <figure>
+    <img src="../assets/diagrams/mlflow-cycle.svg" alt="Le script d'entraînement envoie chaque exécution au tracking ; la meilleure est enregistrée dans le registre puis servie">
+  </figure>
+  <pre data-title="terminal"><code class="language-bash" data-trim>uv run mlflow ui --backend-store-uri sqlite:///mlflow.db     # http://localhost:5000 : sélectionner des runs → Compare</code></pre>
+</section>
+
+<section>
+  <p class="eyebrow">MLflow</p>
+  <h2>Le registre de modèles</h2>
+  <div class="cols cols-21">
+    <div>
+      <p>Quand un run est bon, on lui donne un <strong>nom</strong> et une <strong>version</strong>. C'est ce nom que l'API ou le serveur chargera, pas un chemin de fichier.</p>
+      <pre data-title="terminal"><code class="language-bash" data-trim>uv run python -c "import mlflow; mlflow.set_tracking_uri('sqlite:///mlflow.db'); \
+  print(mlflow.register_model('runs:/&lt;RUN_ID&gt;/model', 'diabetes-risk'))"
+
+uv run mlflow models serve -m "models:/diabetes-risk/1" -p 5001 --no-conda</code></pre>
+    </div>
+    <div class="stack">
+      <div class="callout warn"><i data-icon="database"></i><p>Le registre demande un backend base de données : <code>sqlite:///mlflow.db</code> suffit en local. Un simple dossier <code>mlruns/</code> ne le supporte pas.</p></div>
+      <div class="callout fragment"><i data-icon="api"></i><p><code>mlflow models serve</code> donne une API de prédiction clé en main. En séance 2 nous écrirons la nôtre : plus lisible, plus légère, documentée.</p></div>
+    </div>
+  </div>
+</section>
+
+<section>
+  <p class="eyebrow">DVC et MLflow</p>
+  <h2>Concurrents ou complémentaires ?</h2>
+  <table>
+    <thead><tr><th></th><th>DVC</th><th>MLflow</th></tr></thead>
+    <tbody>
+      <tr><td>Versionne</td><td>fichiers (données, modèles) et pipeline</td><td>exécutions (paramètres, métriques, artefacts)</td></tr>
+      <tr class="fragment"><td>Répond à</td><td>« comment régénérer ce modèle ? »</td><td>« quelle tentative était la meilleure ? »</td></tr>
+      <tr class="fragment"><td>Stockage</td><td>remote : Blob, GCS, dossier</td><td>tracking : sqlite, serveur ; registre</td></tr>
+      <tr class="fragment"><td>Dans le fil rouge</td><td><code>dvc repro</code> orchestre les étapes</td><td>chaque <code>train</code> crée un run</td></tr>
+    </tbody>
+  </table>
+  <p class="fragment">DVC rend l'exécution <strong>reproductible</strong>, MLflow la rend <strong>comparable</strong>. Beaucoup d'équipes n'utilisent que l'un des deux ; l'important est de couvrir les deux questions.</p>
+</section>
+
+<section class="lab" data-minutes="30">
+  <p class="eyebrow alt">À vous de jouer · Lab 3</p>
+  <h2>Tracer et comparer avec MLflow</h2>
+  <div class="cols cols-21">
+    <ol class="steps">
+      <li><strong>Installer</strong> <code>uv add --group mlops mlflow</code></li>
+      <li><strong>Instrumenter <code>train.py</code></strong> tracking URI, expérience, <code>start_run</code>, <code>log_params</code>, <code>log_metric</code>, <code>log_model</code></li>
+      <li><strong>Produire trois runs</strong> profondeur 6, 3 et 12 (avec <code>dvc exp run</code> ou à la main)</li>
+      <li><strong>Comparer dans l'interface</strong> trier, <em>Compare</em>, regarder les artefacts</li>
+      <li><strong>Enregistrer le meilleur</strong> <code>register_model</code>, puis <code>mlflow models serve</code></li>
+    </ol>
+    <div class="card accent">
+      <h3><i data-icon="terminal"></i> Démarrage</h3>
+      <pre><code class="language-bash" data-trim>uv add --group mlops mlflow
+# … instrumenter train.py …
+uv run dvc repro
+uv run mlflow ui --backend-store-uri sqlite:///mlflow.db</code></pre>
+      <p><span class="badge">★ étapes 1 à 5</span> <span class="badge alt">★★ autolog, tags, serveur partagé</span></p>
+      <p class="small">Guide détaillé : <code>labs/lab-03-mlflow.md</code></p>
+    </div>
+  </div>
+</section>
+
+<!-- ============================================================ Récap -->
+<section class="recap">
+  <p class="eyebrow">Récapitulatif</p>
+  <h2>Ce qu'on retient de la séance 1</h2>
+  <div class="cols cols-3">
+    <div class="card fragment" data-kind="code"><h3><i data-icon="package"></i> uv</h3><p><code>pyproject.toml</code> dit ce que vous voulez, <code>uv.lock</code> ce que vous avez, <code>uv sync</code> fait coïncider, <code>uv run</code> exécute dedans.</p></div>
+    <div class="card fragment" data-kind="data"><h3><i data-icon="database"></i> DVC</h3><p><code>dvc add</code> pour un fichier, <code>dvc.yaml</code> pour un pipeline, <code>dvc repro</code> pour régénérer ce qui a changé, <code>push</code>/<code>pull</code> pour partager.</p></div>
+    <div class="card fragment" data-kind="data"><h3><i data-icon="chart"></i> MLflow</h3><p>Un run par entraînement, des paramètres et métriques explicites, l'interface pour comparer, le registre pour nommer le modèle qui part en production.</p></div>
+  </div>
+  <div class="callout ok mt fragment"><i data-icon="check"></i><p>Trois fichiers de vérité : <code>pyproject.toml</code> + <code>uv.lock</code> (code), <code>dvc.yaml</code> + <code>dvc.lock</code> (pipeline), l'historique MLflow (expériences). Rien de lourd ni de secret dans Git.</p></div>
+</section>
+
+<section>
+  <p class="eyebrow">Pour la prochaine fois</p>
+  <h2>Devoir et séance 2</h2>
+  <div class="cols">
+    <div class="card accent">
+      <h3><i data-icon="notebook"></i> Devoir</h3>
+      <p>Prendre votre propre notebook (ou garder le fil rouge) et le mettre au format du projet :</p>
+      <ul>
+        <li><code>uv init</code>, code d'entraînement dans <code>src/</code></li>
+        <li>un <code>params.yaml</code> et un <code>dvc.yaml</code> avec au moins deux étapes</li>
+        <li>au moins un run MLflow</li>
+      </ul>
+    </div>
+    <div class="card" data-kind="infra">
+      <h3><i data-icon="api"></i> Séance 2 · Du modèle à une application web</h3>
+      <p>Une API FastAPI qui sert le modèle, une interface Streamlit qui l'appelle, le tout dans Docker, avec des tests lancés par GitHub Actions.</p>
+      <div class="pipeline" data-fragments="false" data-compact="true" data-steps='[
+        {"label":"Modèle","icon":"package","kind":"data","state":"done"},
+        {"label":"API","icon":"api","kind":"infra"},
+        {"label":"Site web","icon":"browser","kind":"user"},
+        {"label":"Docker","icon":"layers","kind":"infra"},
+        {"label":"CI","icon":"check","kind":"code"}]'></div>
+    </div>
+  </div>
+</section>
+
+<section class="title-slide">
+  <p class="eyebrow">Séance 1 / 3 · fin</p>
+  <h1>Questions ?</h1>
+  <p class="subtitle">Cours et labs : <code>seance-1-fondations/README.md</code> · Projet de référence : <code>projet-fil-rouge/</code></p>
+  <div class="meta">
+    <span><i data-icon="package"></i> docs.astral.sh/uv</span>
+    <span><i data-icon="database"></i> dvc.org/doc</span>
+    <span><i data-icon="chart"></i> mlflow.org/docs</span>
+  </div>
+</section>
+
+</div>
+</div>
+
+<script src="../assets/vendor/reveal.js/dist/reveal.js"></script>
+<script src="../assets/vendor/reveal.js/dist/plugin/notes.js"></script>
+<script src="../assets/vendor/reveal.js/dist/plugin/highlight.js"></script>
+<script src="../assets/vendor/reveal.js/dist/plugin/zoom.js"></script>
+<script src="../assets/vendor/reveal.js/dist/plugin/search.js"></script>
+<script src="../assets/js/icons.js"></script>
+<script src="../assets/js/pipeline.js"></script>
+<script src="../assets/js/deck.js"></script>
+</body>
+</html>

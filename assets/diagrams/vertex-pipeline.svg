@@ -1,0 +1,149 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1010 300" width="1010" height="300" class="dg dg-vertex-pipeline" role="img" aria-labelledby="dg-vertex-pipeline-t dg-vertex-pipeline-d">
+<title id="dg-vertex-pipeline-t">Vertex AI : des données à l’endpoint</title>
+<desc id="dg-vertex-pipeline-d">Entraînement managé, registre de modèles, endpoint de prédiction, et Gemini accessible depuis la même plateforme.</desc>
+
+  <style>
+    .dg-vertex-pipeline {
+      --bg:#F4F6F9; --surface:#FFFFFF; --surface2:#E9EDF3; --fg:#17202B; --muted:#5D6B7D;
+      --line:#D3DAE4; --line2:#B9C3D1; --accent:#0E6E8E; --accent2:#D9731A; --ok:#1D8F5A; --err:#C73E3E;
+      --data:#6D4FD3; --code:#0E6E8E; --infra:#1D8F5A; --user:#B8471B; --ai:#B5338A; --neutral:#8B97A8;
+      --nodefg:#FFFFFF; --ghostfg:#17202B;
+      font-family: Inter, "Segoe UI", system-ui, sans-serif;
+    }
+    @media (prefers-color-scheme: dark) {
+      .dg-vertex-pipeline {
+        --bg:#0D141D; --surface:#141D29; --surface2:#1B2634; --fg:#E7ECF3; --muted:#9AA9BB;
+        --line:#2B3A4C; --line2:#3C4D62; --accent:#4FB3D9; --accent2:#F0A050; --ok:#3FC27F; --err:#F26B6B;
+        --data:#A08BF0; --code:#4FB3D9; --infra:#3FC27F; --user:#F08A5B; --ai:#E27AC0; --neutral:#6B7A8C;
+        --nodefg:#0D141D; --ghostfg:#E7ECF3;
+      }
+    }
+    .dg-vertex-pipeline .bg { fill: var(--bg); }
+    .dg-vertex-pipeline text { fill: var(--fg); }
+    .dg-vertex-pipeline .muted { fill: var(--muted); }
+    .dg-vertex-pipeline .label { fill: var(--nodefg); font-weight: 600; }
+    .dg-vertex-pipeline .sublabel { fill: var(--nodefg); opacity: .85; }
+    .dg-vertex-pipeline .ghost .box { fill: var(--surface); stroke: var(--line2); stroke-dasharray: 6 5; stroke-width: 1.6; }
+    .dg-vertex-pipeline .ghost .label, .dg-vertex-pipeline .ghost .sublabel { fill: var(--ghostfg); }
+    .dg-vertex-pipeline .ghost .ic { color: var(--muted); }
+    .dg-vertex-pipeline .ic { color: var(--nodefg); }
+    .dg-vertex-pipeline .group { fill: var(--surface); stroke: var(--line); stroke-width: 1.5; }
+    .dg-vertex-pipeline .group.dashed { fill: none; stroke: var(--line2); stroke-dasharray: 7 6; }
+    .dg-vertex-pipeline .group.tint-data { fill: color-mix(in srgb, var(--data) 8%, var(--surface)); }
+    .dg-vertex-pipeline .group.tint-infra { fill: color-mix(in srgb, var(--infra) 8%, var(--surface)); }
+    .dg-vertex-pipeline .group.tint-user { fill: color-mix(in srgb, var(--user) 8%, var(--surface)); }
+    .dg-vertex-pipeline .group.tint-code { fill: color-mix(in srgb, var(--code) 8%, var(--surface)); }
+    .dg-vertex-pipeline .group.tint-ai { fill: color-mix(in srgb, var(--ai) 8%, var(--surface)); }
+    .dg-vertex-pipeline .group-title { fill: var(--muted); font-size: 11px; font-weight: 600; letter-spacing: .08em; text-transform: uppercase; }
+    .dg-vertex-pipeline .edge { fill: none; stroke: var(--muted); stroke-width: 2.4; stroke-linecap: round; }
+    .dg-vertex-pipeline .edge.thin { stroke-width: 1.6; }
+    .dg-vertex-pipeline .edge.dashed { stroke-dasharray: 6 6; }
+    .dg-vertex-pipeline .edge.flow { stroke-dasharray: 9 8; animation: dg-vertex-pipeline-flow 1.1s linear infinite; }
+    .dg-vertex-pipeline .edge.slow { animation-duration: 2.2s; }
+    .dg-vertex-pipeline .edge.accent { stroke: var(--accent); }
+    .dg-vertex-pipeline .edge.warn { stroke: var(--accent2); }
+    .dg-vertex-pipeline .edge.ok { stroke: var(--ok); }
+    .dg-vertex-pipeline .edge.err { stroke: var(--err); }
+    .dg-vertex-pipeline .edge.data { stroke: var(--data); }
+    .dg-vertex-pipeline .edge.ai { stroke: var(--ai); }
+    .dg-vertex-pipeline .edge.lifeline { stroke: var(--line2); stroke-width: 1.5; stroke-dasharray: 4 5; }
+    .dg-vertex-pipeline .arrow { fill: var(--muted); }
+    .dg-vertex-pipeline .arrow.accent { fill: var(--accent); } .dg-vertex-pipeline .arrow.warn { fill: var(--accent2); }
+    .dg-vertex-pipeline .arrow.ok { fill: var(--ok); } .dg-vertex-pipeline .arrow.err { fill: var(--err); }
+    .dg-vertex-pipeline .arrow.data { fill: var(--data); } .dg-vertex-pipeline .arrow.ai { fill: var(--ai); }
+    .dg-vertex-pipeline .edge-label { fill: var(--muted); font-size: 11.5px; font-family: "JetBrains Mono", Consolas, monospace; }
+    .dg-vertex-pipeline .edge-label.fg { fill: var(--fg); }
+    .dg-vertex-pipeline .edge-label-bg { fill: var(--bg); }
+    .dg-vertex-pipeline .badge-done { fill: var(--ok); } .dg-vertex-pipeline .badge-err { fill: var(--err); } .dg-vertex-pipeline .badge-run { fill: var(--accent2); }
+    .dg-vertex-pipeline .badge-ic { color: #fff; }
+    .dg-vertex-pipeline .note { fill: var(--muted); font-size: 12px; }
+    .dg-vertex-pipeline .fg { fill: var(--fg); }
+    .dg-vertex-pipeline .strong { font-weight: 600; }
+    .dg-vertex-pipeline .title { fill: var(--fg); font-size: 15px; font-weight: 600; }
+    .dg-vertex-pipeline .small { font-size: 11px; }
+    .dg-vertex-pipeline .pill { fill: var(--surface2); }
+    .dg-vertex-pipeline .pill-text { fill: var(--fg); font-size: 11.5px; font-weight: 600; }
+    .dg-vertex-pipeline .pill.user { fill: var(--user); } .dg-vertex-pipeline .pill.infra { fill: var(--infra); }
+    .dg-vertex-pipeline .pill.user .pill-text, .dg-vertex-pipeline .pill.infra .pill-text { fill: var(--nodefg); }
+    .dg-vertex-pipeline .cross { stroke: var(--err); stroke-width: 3; stroke-linecap: round; }
+    @keyframes dg-vertex-pipeline-flow { to { stroke-dashoffset: -34; } }
+    @media (prefers-reduced-motion: reduce) { .dg-vertex-pipeline .edge.flow { animation: none; } }
+  </style>
+<defs>
+<marker id="dg-vertex-pipeline-arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0 0 L10 5 L0 10 z" class="arrow "/></marker>
+<marker id="dg-vertex-pipeline-arrow-ai" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0 0 L10 5 L0 10 z" class="arrow ai"/></marker>
+<symbol id="dg-vertex-pipeline-i-check" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="m5 12 5 5L20 7"/></symbol>
+<symbol id="dg-vertex-pipeline-i-cross" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M6 6l12 12M18 6 6 18"/></symbol>
+<symbol id="dg-vertex-pipeline-i-refresh" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M20 11a8 8 0 0 0-14.5-4.5L3 9M4 13a8 8 0 0 0 14.5 4.5L21 15"/><path d="M3 4v5h5M21 20v-5h-5"/></symbol>
+<symbol id="dg-vertex-pipeline-i-database" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><ellipse cx="12" cy="5" rx="8" ry="3"/><path d="M4 5v14c0 1.7 3.6 3 8 3s8-1.3 8-3V5"/><path d="M4 12c0 1.7 3.6 3 8 3s8-1.3 8-3"/></symbol>
+<symbol id="dg-vertex-pipeline-i-model" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="5" r="2.2"/><circle cx="5" cy="19" r="2.2"/><circle cx="19" cy="19" r="2.2"/><circle cx="12" cy="13" r="2.2"/><path d="M12 7.2v3.6M10.4 14.6l-4 2.8M13.6 14.6l4 2.8"/></symbol>
+<symbol id="dg-vertex-pipeline-i-tag" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 3h8l10 10-8 8L3 11V3Z"/><path d="M7.5 7.5h.01"/></symbol>
+<symbol id="dg-vertex-pipeline-i-api" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 12h5M15 12h5"/><rect x="9" y="8" width="6" height="8" rx="1.5"/><path d="M4 8v8M20 8v8"/></symbol>
+<symbol id="dg-vertex-pipeline-i-globe" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M3 12h18M12 3a14 14 0 0 1 0 18M12 3a14 14 0 0 0 0 18"/></symbol>
+<symbol id="dg-vertex-pipeline-i-chart" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 21h18M6 17v-6M11 17V7M16 17v-3"/></symbol>
+<symbol id="dg-vertex-pipeline-i-sparkle" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3l1.8 5.2L19 10l-5.2 1.8L12 17l-1.8-5.2L5 10l5.2-1.8L12 3Z"/><path d="M19 16l.8 2.2L22 19l-2.2.8L19 22l-.8-2.2L16 19l2.2-.8L19 16Z"/></symbol>
+</defs>
+<rect class="bg" width="1010" height="300" rx="18"/>
+<g class="grp">
+<rect class="group dashed" x="210" y="60" width="590" height="150" rx="16"/>
+<text class="group-title" x="224" y="80">Vertex AI</text>
+</g>
+<path class="edge flow" d="M180 132 C203 132, 203 132, 226 132" marker-end="url(#dg-vertex-pipeline-arrow)"/>
+<rect class="edge-label-bg" x="186.65" y="113" width="32.7" height="16" rx="4"/>
+<text class="edge-label " x="203" y="125" text-anchor="middle">lit</text>
+<path class="edge flow" d="M380 132 C403 132, 403 132, 426 132" marker-end="url(#dg-vertex-pipeline-arrow)"/>
+<rect class="edge-label-bg" x="376.3" y="113" width="53.400000000000006" height="16" rx="4"/>
+<text class="edge-label " x="403" y="125" text-anchor="middle">upload</text>
+<path class="edge flow" d="M580 132 C603 132, 603 132, 626 132" marker-end="url(#dg-vertex-pipeline-arrow)"/>
+<rect class="edge-label-bg" x="576.3" y="113" width="53.400000000000006" height="16" rx="4"/>
+<text class="edge-label " x="603" y="125" text-anchor="middle">deploy</text>
+<path class="edge flow" d="M780 132 C803 132, 803 132, 826 132" marker-end="url(#dg-vertex-pipeline-arrow)"/>
+<rect class="edge-label-bg" x="783.2" y="113" width="39.6" height="16" rx="4"/>
+<text class="edge-label " x="803" y="125" text-anchor="middle">REST</text>
+<path class="edge dashed  thin" d="M305 164 C305 185, 305 185, 305 206" marker-end="url(#dg-vertex-pipeline-arrow)"/>
+<path class="edge dashed ai" d="M905 210 C905 189, 905 189, 905 168" marker-end="url(#dg-vertex-pipeline-arrow-ai)"/>
+<rect class="edge-label-bg" x="898.8" y="180" width="122.4" height="16" rx="4"/>
+<text class="edge-label " x="960" y="192" text-anchor="middle">generate_content</text>
+<g class="node " data-id="data">
+<rect class="box" fill="var(--data)" x="30" y="100" width="150" height="64" rx="12"/>
+<use class="ic" href="#dg-vertex-pipeline-i-database" x="44" y="120" width="24" height="24"/>
+<text class="label" x="78" y="130" font-size="13">Cloud Storage</text>
+<text class="sublabel" x="78" y="144" font-size="10">données</text>
+</g>
+<g class="node " data-id="train">
+<rect class="box" fill="var(--code)" x="230" y="100" width="150" height="64" rx="12"/>
+<use class="ic" href="#dg-vertex-pipeline-i-model" x="244" y="120" width="24" height="24"/>
+<text class="label" x="278" y="130" font-size="13">Training job</text>
+<text class="sublabel" x="278" y="144" font-size="10">conteneur / AutoML</text>
+</g>
+<g class="node " data-id="reg">
+<rect class="box" fill="var(--data)" x="430" y="100" width="150" height="64" rx="12"/>
+<use class="ic" href="#dg-vertex-pipeline-i-tag" x="444" y="120" width="24" height="24"/>
+<text class="label" x="478" y="130" font-size="13">Model Registry</text>
+<text class="sublabel" x="478" y="144" font-size="10">versions</text>
+</g>
+<g class="node " data-id="ep">
+<rect class="box" fill="var(--infra)" x="630" y="100" width="150" height="64" rx="12"/>
+<use class="ic" href="#dg-vertex-pipeline-i-api" x="644" y="120" width="24" height="24"/>
+<text class="label" x="678" y="130" font-size="13">Endpoint</text>
+<text class="sublabel" x="678" y="144" font-size="10">prédiction en ligne</text>
+</g>
+<g class="node " data-id="app">
+<rect class="box" fill="var(--user)" x="830" y="100" width="150" height="64" rx="12"/>
+<use class="ic" href="#dg-vertex-pipeline-i-globe" x="844" y="120" width="24" height="24"/>
+<text class="label" x="878" y="130" font-size="13">Application</text>
+<text class="sublabel" x="878" y="144" font-size="10">Streamlit / API</text>
+</g>
+<g class="node " data-id="exp">
+<rect class="box" fill="var(--data)" x="230" y="210" width="150" height="50" rx="12"/>
+<use class="ic" href="#dg-vertex-pipeline-i-chart" x="244" y="226" width="18" height="18"/>
+<text class="label" x="272" y="233" font-size="12">Experiments</text>
+<text class="sublabel" x="272" y="246" font-size="9">métriques, comparaisons</text>
+</g>
+<g class="node " data-id="gem">
+<rect class="box" fill="var(--ai)" x="830" y="210" width="150" height="50" rx="12"/>
+<use class="ic" href="#dg-vertex-pipeline-i-sparkle" x="844" y="226" width="18" height="18"/>
+<text class="label" x="872" y="233" font-size="12">Gemini</text>
+<text class="sublabel" x="872" y="246" font-size="9">AI Studio / Vertex</text>
+</g>
+</svg>

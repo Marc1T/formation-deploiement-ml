@@ -1,0 +1,45 @@
+# Pipeline DVC : prepare -> train -> evaluate
+# Lancer :  uv run dvc repro        Voir le graphe :  uv run dvc dag
+stages:
+  prepare:
+    cmd: python -m diabetes_ml.data
+    deps:
+      - data/raw/diabetes.csv
+      - src/diabetes_ml/data.py
+    params:
+      - data
+    outs:
+      - data/processed/train.csv
+      - data/processed/test.csv
+
+  train:
+    cmd: python -m diabetes_ml.train
+    deps:
+      - data/processed/train.csv
+      - src/diabetes_ml/train.py
+      - src/diabetes_ml/data.py
+    params:
+      - train
+      - mlflow
+    outs:
+      - models/model.joblib
+      - models/model_info.json
+
+  evaluate:
+    cmd: python -m diabetes_ml.evaluate
+    deps:
+      - models/model.joblib
+      - models/model_info.json
+      - data/processed/test.csv
+      - src/diabetes_ml/evaluate.py
+    params:
+      - evaluate
+    metrics:
+      - reports/metrics.json:
+          cache: false
+    plots:
+      - reports/confusion_matrix.csv:
+          cache: false
+          template: confusion
+          x: predicted
+          y: actual

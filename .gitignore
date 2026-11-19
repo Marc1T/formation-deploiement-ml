@@ -1,0 +1,8 @@
+# Sorties générées (régénérables par les scripts)
+pdf/
+captures/
+
+# Divers
+.DS_Store
+Thumbs.db
+node_modules/

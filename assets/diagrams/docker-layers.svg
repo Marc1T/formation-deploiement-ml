@@ -1,0 +1,126 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 340" width="1000" height="340" class="dg dg-docker-layers" role="img" aria-labelledby="dg-docker-layers-t dg-docker-layers-d">
+<title id="dg-docker-layers-t">Image Docker en deux étapes</title>
+<desc id="dg-docker-layers-d">L’étape builder installe les dépendances avec uv ; l’étape runtime ne garde que le venv, le code et le modèle.</desc>
+
+  <style>
+    .dg-docker-layers {
+      --bg:#F4F6F9; --surface:#FFFFFF; --surface2:#E9EDF3; --fg:#17202B; --muted:#5D6B7D;
+      --line:#D3DAE4; --line2:#B9C3D1; --accent:#0E6E8E; --accent2:#D9731A; --ok:#1D8F5A; --err:#C73E3E;
+      --data:#6D4FD3; --code:#0E6E8E; --infra:#1D8F5A; --user:#B8471B; --ai:#B5338A; --neutral:#8B97A8;
+      --nodefg:#FFFFFF; --ghostfg:#17202B;
+      font-family: Inter, "Segoe UI", system-ui, sans-serif;
+    }
+    @media (prefers-color-scheme: dark) {
+      .dg-docker-layers {
+        --bg:#0D141D; --surface:#141D29; --surface2:#1B2634; --fg:#E7ECF3; --muted:#9AA9BB;
+        --line:#2B3A4C; --line2:#3C4D62; --accent:#4FB3D9; --accent2:#F0A050; --ok:#3FC27F; --err:#F26B6B;
+        --data:#A08BF0; --code:#4FB3D9; --infra:#3FC27F; --user:#F08A5B; --ai:#E27AC0; --neutral:#6B7A8C;
+        --nodefg:#0D141D; --ghostfg:#E7ECF3;
+      }
+    }
+    .dg-docker-layers .bg { fill: var(--bg); }
+    .dg-docker-layers text { fill: var(--fg); }
+    .dg-docker-layers .muted { fill: var(--muted); }
+    .dg-docker-layers .label { fill: var(--nodefg); font-weight: 600; }
+    .dg-docker-layers .sublabel { fill: var(--nodefg); opacity: .85; }
+    .dg-docker-layers .ghost .box { fill: var(--surface); stroke: var(--line2); stroke-dasharray: 6 5; stroke-width: 1.6; }
+    .dg-docker-layers .ghost .label, .dg-docker-layers .ghost .sublabel { fill: var(--ghostfg); }
+    .dg-docker-layers .ghost .ic { color: var(--muted); }
+    .dg-docker-layers .ic { color: var(--nodefg); }
+    .dg-docker-layers .group { fill: var(--surface); stroke: var(--line); stroke-width: 1.5; }
+    .dg-docker-layers .group.dashed { fill: none; stroke: var(--line2); stroke-dasharray: 7 6; }
+    .dg-docker-layers .group.tint-data { fill: color-mix(in srgb, var(--data) 8%, var(--surface)); }
+    .dg-docker-layers .group.tint-infra { fill: color-mix(in srgb, var(--infra) 8%, var(--surface)); }
+    .dg-docker-layers .group.tint-user { fill: color-mix(in srgb, var(--user) 8%, var(--surface)); }
+    .dg-docker-layers .group.tint-code { fill: color-mix(in srgb, var(--code) 8%, var(--surface)); }
+    .dg-docker-layers .group.tint-ai { fill: color-mix(in srgb, var(--ai) 8%, var(--surface)); }
+    .dg-docker-layers .group-title { fill: var(--muted); font-size: 11px; font-weight: 600; letter-spacing: .08em; text-transform: uppercase; }
+    .dg-docker-layers .edge { fill: none; stroke: var(--muted); stroke-width: 2.4; stroke-linecap: round; }
+    .dg-docker-layers .edge.thin { stroke-width: 1.6; }
+    .dg-docker-layers .edge.dashed { stroke-dasharray: 6 6; }
+    .dg-docker-layers .edge.flow { stroke-dasharray: 9 8; animation: dg-docker-layers-flow 1.1s linear infinite; }
+    .dg-docker-layers .edge.slow { animation-duration: 2.2s; }
+    .dg-docker-layers .edge.accent { stroke: var(--accent); }
+    .dg-docker-layers .edge.warn { stroke: var(--accent2); }
+    .dg-docker-layers .edge.ok { stroke: var(--ok); }
+    .dg-docker-layers .edge.err { stroke: var(--err); }
+    .dg-docker-layers .edge.data { stroke: var(--data); }
+    .dg-docker-layers .edge.ai { stroke: var(--ai); }
+    .dg-docker-layers .edge.lifeline { stroke: var(--line2); stroke-width: 1.5; stroke-dasharray: 4 5; }
+    .dg-docker-layers .arrow { fill: var(--muted); }
+    .dg-docker-layers .arrow.accent { fill: var(--accent); } .dg-docker-layers .arrow.warn { fill: var(--accent2); }
+    .dg-docker-layers .arrow.ok { fill: var(--ok); } .dg-docker-layers .arrow.err { fill: var(--err); }
+    .dg-docker-layers .arrow.data { fill: var(--data); } .dg-docker-layers .arrow.ai { fill: var(--ai); }
+    .dg-docker-layers .edge-label { fill: var(--muted); font-size: 11.5px; font-family: "JetBrains Mono", Consolas, monospace; }
+    .dg-docker-layers .edge-label.fg { fill: var(--fg); }
+    .dg-docker-layers .edge-label-bg { fill: var(--bg); }
+    .dg-docker-layers .badge-done { fill: var(--ok); } .dg-docker-layers .badge-err { fill: var(--err); } .dg-docker-layers .badge-run { fill: var(--accent2); }
+    .dg-docker-layers .badge-ic { color: #fff; }
+    .dg-docker-layers .note { fill: var(--muted); font-size: 12px; }
+    .dg-docker-layers .fg { fill: var(--fg); }
+    .dg-docker-layers .strong { font-weight: 600; }
+    .dg-docker-layers .title { fill: var(--fg); font-size: 15px; font-weight: 600; }
+    .dg-docker-layers .small { font-size: 11px; }
+    .dg-docker-layers .pill { fill: var(--surface2); }
+    .dg-docker-layers .pill-text { fill: var(--fg); font-size: 11.5px; font-weight: 600; }
+    .dg-docker-layers .pill.user { fill: var(--user); } .dg-docker-layers .pill.infra { fill: var(--infra); }
+    .dg-docker-layers .pill.user .pill-text, .dg-docker-layers .pill.infra .pill-text { fill: var(--nodefg); }
+    .dg-docker-layers .cross { stroke: var(--err); stroke-width: 3; stroke-linecap: round; }
+    @keyframes dg-docker-layers-flow { to { stroke-dashoffset: -34; } }
+    @media (prefers-reduced-motion: reduce) { .dg-docker-layers .edge.flow { animation: none; } }
+  </style>
+<defs>
+<marker id="dg-docker-layers-arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0 0 L10 5 L0 10 z" class="arrow "/></marker>
+<marker id="dg-docker-layers-arrow-accent" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0 0 L10 5 L0 10 z" class="arrow accent"/></marker>
+<symbol id="dg-docker-layers-i-check" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="m5 12 5 5L20 7"/></symbol>
+<symbol id="dg-docker-layers-i-cross" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M6 6l12 12M18 6 6 18"/></symbol>
+<symbol id="dg-docker-layers-i-refresh" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M20 11a8 8 0 0 0-14.5-4.5L3 9M4 13a8 8 0 0 0 14.5 4.5L21 15"/><path d="M3 4v5h5M21 20v-5h-5"/></symbol>
+</defs>
+<rect class="bg" width="1000" height="340" rx="18"/>
+<g class="grp">
+<rect class="group  tint-code" x="30" y="30" width="420" height="280" rx="16"/>
+<text class="group-title" x="44" y="50">Étape 1 · builder (image uv)</text>
+</g>
+<g class="grp">
+<rect class="group  tint-infra" x="550" y="30" width="420" height="280" rx="16"/>
+<text class="group-title" x="564" y="50">Étape 2 · runtime (python:3.11-slim)</text>
+</g>
+<path class="edge flow accent" d="M450 172 L550 172" marker-end="url(#dg-docker-layers-arrow-accent)"/>
+<rect class="edge-label-bg" x="449.15" y="152" width="101.7" height="16" rx="4"/>
+<text class="edge-label " x="500" y="164" text-anchor="middle">copie du venv</text>
+<g class="node " data-id="b0">
+<rect class="box" fill="var(--neutral)" x="50" y="250" width="380" height="44" rx="12"/>
+<text class="label" x="64" y="276.3333333333333" font-size="13">FROM ghcr.io/astral-sh/uv:…-python3.11</text>
+</g>
+<g class="node " data-id="b1">
+<rect class="box" fill="var(--code)" x="50" y="198" width="380" height="44" rx="12"/>
+<text class="label" x="64" y="224.33333333333334" font-size="13">COPY pyproject.toml uv.lock · uv sync (cache)</text>
+</g>
+<g class="node " data-id="b2">
+<rect class="box" fill="var(--code)" x="50" y="146" width="380" height="44" rx="12"/>
+<text class="label" x="64" y="172.33333333333334" font-size="13">COPY src · uv sync --no-editable</text>
+</g>
+<g class="node " data-id="b3">
+<rect class="box" fill="var(--data)" x="50" y="94" width="380" height="44" rx="12"/>
+<text class="label" x="64" y="120.33333333333333" font-size="13">COPY models (modèle entraîné)</text>
+</g>
+<g class="node " data-id="r0">
+<rect class="box" fill="var(--neutral)" x="570" y="250" width="380" height="44" rx="12"/>
+<text class="label" x="584" y="276.3333333333333" font-size="13">FROM python:3.11-slim</text>
+</g>
+<g class="node " data-id="r1">
+<rect class="box" fill="var(--code)" x="570" y="198" width="380" height="44" rx="12"/>
+<text class="label" x="584" y="224.33333333333334" font-size="13">COPY --from=builder /app/.venv</text>
+</g>
+<g class="node " data-id="r2">
+<rect class="box" fill="var(--code)" x="570" y="146" width="380" height="44" rx="12"/>
+<text class="label" x="584" y="172.33333333333334" font-size="13">COPY api · COPY models</text>
+</g>
+<g class="node " data-id="r3">
+<rect class="box" fill="var(--infra)" x="570" y="94" width="380" height="44" rx="12"/>
+<text class="label" x="584" y="120.33333333333333" font-size="13">USER appuser · CMD uvicorn</text>
+</g>
+<text class="note small" x="240" y="78" text-anchor="middle" font-size="12">les couches se construisent de bas en haut ↑</text>
+<text class="note small" x="760" y="78" text-anchor="middle" font-size="12">ni uv, ni cache, ni sources : plus petite, plus sûre</text>
+<text class="note" x="500" y="330" text-anchor="middle" font-size="12">Changer le code ne réinstalle pas les dépendances : la couche uv sync reste en cache.</text>
+</svg>

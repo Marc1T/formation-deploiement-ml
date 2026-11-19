@@ -1,0 +1,1 @@
+reveal.js 6.0.2 vendorise depuis le paquet npm reveal.js@6.0.2 (MIT). Fichiers : dist/reset.css, dist/reveal.css, dist/reveal.js, dist/plugin/{notes,highlight,zoom,search}.js, dist/plugin/highlight/monokai.css

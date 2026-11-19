@@ -1,0 +1,146 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1240 300" width="1240" height="300" class="dg dg-chaine-complete" role="img" aria-labelledby="dg-chaine-complete-t dg-chaine-complete-d">
+<title id="dg-chaine-complete-t">La chaîne complète, des données au cloud</title>
+<desc id="dg-chaine-complete-d">Six étapes : données, entraînement, modèle versionné, API, site web, cloud, regroupées par séance.</desc>
+
+  <style>
+    .dg-chaine-complete {
+      --bg:#F4F6F9; --surface:#FFFFFF; --surface2:#E9EDF3; --fg:#17202B; --muted:#5D6B7D;
+      --line:#D3DAE4; --line2:#B9C3D1; --accent:#0E6E8E; --accent2:#D9731A; --ok:#1D8F5A; --err:#C73E3E;
+      --data:#6D4FD3; --code:#0E6E8E; --infra:#1D8F5A; --user:#B8471B; --ai:#B5338A; --neutral:#8B97A8;
+      --nodefg:#FFFFFF; --ghostfg:#17202B;
+      font-family: Inter, "Segoe UI", system-ui, sans-serif;
+    }
+    @media (prefers-color-scheme: dark) {
+      .dg-chaine-complete {
+        --bg:#0D141D; --surface:#141D29; --surface2:#1B2634; --fg:#E7ECF3; --muted:#9AA9BB;
+        --line:#2B3A4C; --line2:#3C4D62; --accent:#4FB3D9; --accent2:#F0A050; --ok:#3FC27F; --err:#F26B6B;
+        --data:#A08BF0; --code:#4FB3D9; --infra:#3FC27F; --user:#F08A5B; --ai:#E27AC0; --neutral:#6B7A8C;
+        --nodefg:#0D141D; --ghostfg:#E7ECF3;
+      }
+    }
+    .dg-chaine-complete .bg { fill: var(--bg); }
+    .dg-chaine-complete text { fill: var(--fg); }
+    .dg-chaine-complete .muted { fill: var(--muted); }
+    .dg-chaine-complete .label { fill: var(--nodefg); font-weight: 600; }
+    .dg-chaine-complete .sublabel { fill: var(--nodefg); opacity: .85; }
+    .dg-chaine-complete .ghost .box { fill: var(--surface); stroke: var(--line2); stroke-dasharray: 6 5; stroke-width: 1.6; }
+    .dg-chaine-complete .ghost .label, .dg-chaine-complete .ghost .sublabel { fill: var(--ghostfg); }
+    .dg-chaine-complete .ghost .ic { color: var(--muted); }
+    .dg-chaine-complete .ic { color: var(--nodefg); }
+    .dg-chaine-complete .group { fill: var(--surface); stroke: var(--line); stroke-width: 1.5; }
+    .dg-chaine-complete .group.dashed { fill: none; stroke: var(--line2); stroke-dasharray: 7 6; }
+    .dg-chaine-complete .group.tint-data { fill: color-mix(in srgb, var(--data) 8%, var(--surface)); }
+    .dg-chaine-complete .group.tint-infra { fill: color-mix(in srgb, var(--infra) 8%, var(--surface)); }
+    .dg-chaine-complete .group.tint-user { fill: color-mix(in srgb, var(--user) 8%, var(--surface)); }
+    .dg-chaine-complete .group.tint-code { fill: color-mix(in srgb, var(--code) 8%, var(--surface)); }
+    .dg-chaine-complete .group.tint-ai { fill: color-mix(in srgb, var(--ai) 8%, var(--surface)); }
+    .dg-chaine-complete .group-title { fill: var(--muted); font-size: 11px; font-weight: 600; letter-spacing: .08em; text-transform: uppercase; }
+    .dg-chaine-complete .edge { fill: none; stroke: var(--muted); stroke-width: 2.4; stroke-linecap: round; }
+    .dg-chaine-complete .edge.thin { stroke-width: 1.6; }
+    .dg-chaine-complete .edge.dashed { stroke-dasharray: 6 6; }
+    .dg-chaine-complete .edge.flow { stroke-dasharray: 9 8; animation: dg-chaine-complete-flow 1.1s linear infinite; }
+    .dg-chaine-complete .edge.slow { animation-duration: 2.2s; }
+    .dg-chaine-complete .edge.accent { stroke: var(--accent); }
+    .dg-chaine-complete .edge.warn { stroke: var(--accent2); }
+    .dg-chaine-complete .edge.ok { stroke: var(--ok); }
+    .dg-chaine-complete .edge.err { stroke: var(--err); }
+    .dg-chaine-complete .edge.data { stroke: var(--data); }
+    .dg-chaine-complete .edge.ai { stroke: var(--ai); }
+    .dg-chaine-complete .edge.lifeline { stroke: var(--line2); stroke-width: 1.5; stroke-dasharray: 4 5; }
+    .dg-chaine-complete .arrow { fill: var(--muted); }
+    .dg-chaine-complete .arrow.accent { fill: var(--accent); } .dg-chaine-complete .arrow.warn { fill: var(--accent2); }
+    .dg-chaine-complete .arrow.ok { fill: var(--ok); } .dg-chaine-complete .arrow.err { fill: var(--err); }
+    .dg-chaine-complete .arrow.data { fill: var(--data); } .dg-chaine-complete .arrow.ai { fill: var(--ai); }
+    .dg-chaine-complete .edge-label { fill: var(--muted); font-size: 11.5px; font-family: "JetBrains Mono", Consolas, monospace; }
+    .dg-chaine-complete .edge-label.fg { fill: var(--fg); }
+    .dg-chaine-complete .edge-label-bg { fill: var(--bg); }
+    .dg-chaine-complete .badge-done { fill: var(--ok); } .dg-chaine-complete .badge-err { fill: var(--err); } .dg-chaine-complete .badge-run { fill: var(--accent2); }
+    .dg-chaine-complete .badge-ic { color: #fff; }
+    .dg-chaine-complete .note { fill: var(--muted); font-size: 12px; }
+    .dg-chaine-complete .fg { fill: var(--fg); }
+    .dg-chaine-complete .strong { font-weight: 600; }
+    .dg-chaine-complete .title { fill: var(--fg); font-size: 15px; font-weight: 600; }
+    .dg-chaine-complete .small { font-size: 11px; }
+    .dg-chaine-complete .pill { fill: var(--surface2); }
+    .dg-chaine-complete .pill-text { fill: var(--fg); font-size: 11.5px; font-weight: 600; }
+    .dg-chaine-complete .pill.user { fill: var(--user); } .dg-chaine-complete .pill.infra { fill: var(--infra); }
+    .dg-chaine-complete .pill.user .pill-text, .dg-chaine-complete .pill.infra .pill-text { fill: var(--nodefg); }
+    .dg-chaine-complete .cross { stroke: var(--err); stroke-width: 3; stroke-linecap: round; }
+    @keyframes dg-chaine-complete-flow { to { stroke-dashoffset: -34; } }
+    @media (prefers-reduced-motion: reduce) { .dg-chaine-complete .edge.flow { animation: none; } }
+  </style>
+<defs>
+<marker id="dg-chaine-complete-arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0 0 L10 5 L0 10 z" class="arrow "/></marker>
+<symbol id="dg-chaine-complete-i-check" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="m5 12 5 5L20 7"/></symbol>
+<symbol id="dg-chaine-complete-i-cross" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M6 6l12 12M18 6 6 18"/></symbol>
+<symbol id="dg-chaine-complete-i-refresh" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M20 11a8 8 0 0 0-14.5-4.5L3 9M4 13a8 8 0 0 0 14.5 4.5L21 15"/><path d="M3 4v5h5M21 20v-5h-5"/></symbol>
+<symbol id="dg-chaine-complete-i-database" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><ellipse cx="12" cy="5" rx="8" ry="3"/><path d="M4 5v14c0 1.7 3.6 3 8 3s8-1.3 8-3V5"/><path d="M4 12c0 1.7 3.6 3 8 3s8-1.3 8-3"/></symbol>
+<symbol id="dg-chaine-complete-i-model" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="5" r="2.2"/><circle cx="5" cy="19" r="2.2"/><circle cx="19" cy="19" r="2.2"/><circle cx="12" cy="13" r="2.2"/><path d="M12 7.2v3.6M10.4 14.6l-4 2.8M13.6 14.6l4 2.8"/></symbol>
+<symbol id="dg-chaine-complete-i-package" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M20 7 12 3 4 7v10l8 4 8-4V7Z"/><path d="M4 7l8 4 8-4M12 11v10M8 5l8 4"/></symbol>
+<symbol id="dg-chaine-complete-i-api" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 12h5M15 12h5"/><rect x="9" y="8" width="6" height="8" rx="1.5"/><path d="M4 8v8M20 8v8"/></symbol>
+<symbol id="dg-chaine-complete-i-browser" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="16" rx="2"/><path d="M3 9h18M7 6.5h.01M10 6.5h.01"/></symbol>
+<symbol id="dg-chaine-complete-i-cloud" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M7 18a4 4 0 0 1-.6-7.95A6 6 0 0 1 18 9a4.5 4.5 0 0 1-.5 9H7Z"/></symbol>
+</defs>
+<rect class="bg" width="1240" height="300" rx="18"/>
+<g class="grp">
+<rect class="group  tint-data" x="24" y="72" width="558" height="176" rx="16"/>
+<text class="group-title" x="38" y="92">Séance 1 · reproductibilité</text>
+</g>
+<g class="grp">
+<rect class="group  tint-code" x="618" y="72" width="360" height="176" rx="16"/>
+<text class="group-title" x="632" y="92">Séance 2 · application</text>
+</g>
+<g class="grp">
+<rect class="group  tint-infra" x="1014" y="72" width="206" height="176" rx="16"/>
+<text class="group-title" x="1028" y="92">Séance 3 · production</text>
+</g>
+<path class="edge flow" d="M170 152 C202 152, 202 152, 234 152" marker-end="url(#dg-chaine-complete-arrow)"/>
+<rect class="edge-label-bg" x="166.95" y="96" width="74.1" height="16" rx="4"/>
+<text class="edge-label " x="204" y="108" text-anchor="middle">nettoyage</text>
+<path class="edge flow" d="M368 152 C400 152, 400 152, 432 152" marker-end="url(#dg-chaine-complete-arrow)"/>
+<rect class="edge-label-bg" x="368.4" y="96" width="67.2" height="16" rx="4"/>
+<text class="edge-label " x="402" y="108" text-anchor="middle">artefact</text>
+<path class="edge flow" d="M566 152 C598 152, 598 152, 630 152" marker-end="url(#dg-chaine-complete-arrow)"/>
+<rect class="edge-label-bg" x="573.3" y="96" width="53.400000000000006" height="16" rx="4"/>
+<text class="edge-label " x="600" y="108" text-anchor="middle">charge</text>
+<path class="edge flow" d="M764 152 C796 152, 796 152, 828 152" marker-end="url(#dg-chaine-complete-arrow)"/>
+<rect class="edge-label-bg" x="778.2" y="96" width="39.6" height="16" rx="4"/>
+<text class="edge-label " x="798" y="108" text-anchor="middle">JSON</text>
+<path class="edge flow" d="M962 152 C1005 152, 1005 152, 1048 152" marker-end="url(#dg-chaine-complete-arrow)"/>
+<rect class="edge-label-bg" x="976.85" y="96" width="60.300000000000004" height="16" rx="4"/>
+<text class="edge-label " x="1007" y="108" text-anchor="middle">déploie</text>
+<g class="node " data-id="data">
+<rect class="box" fill="var(--data)" x="40" y="120" width="130" height="64" rx="12"/>
+<use class="ic" href="#dg-chaine-complete-i-database" x="93" y="132" width="24" height="24"/>
+<text class="label" x="105" y="174" text-anchor="middle" font-size="14">Données</text>
+</g>
+<g class="node " data-id="train">
+<rect class="box" fill="var(--code)" x="238" y="120" width="130" height="64" rx="12"/>
+<use class="ic" href="#dg-chaine-complete-i-model" x="291" y="132" width="24" height="24"/>
+<text class="label" x="303" y="174" text-anchor="middle" font-size="14">Entraînement</text>
+</g>
+<g class="node " data-id="model">
+<rect class="box" fill="var(--data)" x="436" y="120" width="130" height="64" rx="12"/>
+<use class="ic" href="#dg-chaine-complete-i-package" x="489" y="132" width="24" height="24"/>
+<text class="label" x="501" y="173" text-anchor="middle" font-size="13">Modèle versionné</text>
+</g>
+<g class="node " data-id="api">
+<rect class="box" fill="var(--infra)" x="634" y="120" width="130" height="64" rx="12"/>
+<use class="ic" href="#dg-chaine-complete-i-api" x="687" y="132" width="24" height="24"/>
+<text class="label" x="699" y="174" text-anchor="middle" font-size="14">API</text>
+</g>
+<g class="node " data-id="web">
+<rect class="box" fill="var(--user)" x="832" y="120" width="130" height="64" rx="12"/>
+<use class="ic" href="#dg-chaine-complete-i-browser" x="885" y="132" width="24" height="24"/>
+<text class="label" x="897" y="174" text-anchor="middle" font-size="14">Site web</text>
+</g>
+<g class="node " data-id="cloud">
+<rect class="box" fill="var(--infra)" x="1052" y="120" width="130" height="64" rx="12"/>
+<use class="ic" href="#dg-chaine-complete-i-cloud" x="1105" y="132" width="24" height="24"/>
+<text class="label" x="1117" y="174" text-anchor="middle" font-size="14">Cloud</text>
+</g>
+<g><rect class="pill " x="40" y="206" width="146.4" height="22" rx="11"/><text class="pill-text" x="113.2" y="221" text-anchor="middle">uv · DVC · MLflow</text></g>
+<g><rect class="pill " x="634" y="206" width="261.6" height="22" rx="11"/><text class="pill-text" x="764.8" y="221" text-anchor="middle">FastAPI · Streamlit · Docker · CI</text></g>
+<g><rect class="pill " x="1052" y="206" width="103.2" height="22" rx="11"/><text class="pill-text" x="1103.6" y="221" text-anchor="middle">Azure · GCP</text></g>
+<text class="note" x="620" y="280" text-anchor="middle" font-size="12">Chaque flèche est un point de passage que la formation outille : versionner, tester, emballer, déployer.</text>
+</svg>

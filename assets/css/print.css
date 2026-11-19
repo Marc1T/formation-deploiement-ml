@@ -1,0 +1,15 @@
+/* ------------------------------------------------------------------
+   Export PDF (slides.html?print-pdf) et impression.
+   reveal.js gère la mise en page ; on force les couleurs et on cache
+   ce qui n'a pas de sens sur papier.
+   ------------------------------------------------------------------ */
+@media print {
+  * { -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; }
+  .theme-toggle, .deck-help, .lab-timer button { display: none !important; }
+  .reveal .controls, .reveal .progress { display: none !important; }
+  .pl .pl-line, .pl .pl-ring, .flow, .anim-up, .anim-float { animation: none !important; }
+  .pl .pl-ring { opacity: 0 !important; }
+  .draw { stroke-dashoffset: 0 !important; }
+  .reveal .fragment { opacity: 1 !important; visibility: visible !important; transform: none !important; }
+  a[href^="http"]::after { content: none !important; }
+}

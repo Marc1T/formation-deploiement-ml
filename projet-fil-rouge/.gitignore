@@ -1,0 +1,29 @@
+# Python / uv
+.venv/
+__pycache__/
+*.pyc
+*.egg-info/
+dist/
+build/
+.pytest_cache/
+.ruff_cache/
+.coverage
+htmlcov/
+
+# Secrets et configuration locale
+.env
+app/.streamlit/secrets.toml
+
+# MLflow (local)
+mlruns/
+mlflow.db
+mlartifacts/
+
+# Sorties gérées par DVC (le pipeline les régénère : uv run dvc repro)
+/data/processed/
+/models/
+
+# Divers
+.DS_Store
+Thumbs.db
+*.log

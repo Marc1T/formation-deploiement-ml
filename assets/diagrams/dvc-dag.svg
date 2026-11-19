@@ -1,0 +1,152 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1020 340" width="1020" height="340" class="dg dg-dvc-dag" role="img" aria-labelledby="dg-dvc-dag-t dg-dvc-dag-d">
+<title id="dg-dvc-dag-t">Le pipeline DVC du projet fil rouge</title>
+<desc id="dg-dvc-dag-d">Trois étapes, prepare, train, evaluate, reliées par leurs fichiers d’entrée et de sortie et paramétrées par params.yaml.</desc>
+
+  <style>
+    .dg-dvc-dag {
+      --bg:#F4F6F9; --surface:#FFFFFF; --surface2:#E9EDF3; --fg:#17202B; --muted:#5D6B7D;
+      --line:#D3DAE4; --line2:#B9C3D1; --accent:#0E6E8E; --accent2:#D9731A; --ok:#1D8F5A; --err:#C73E3E;
+      --data:#6D4FD3; --code:#0E6E8E; --infra:#1D8F5A; --user:#B8471B; --ai:#B5338A; --neutral:#8B97A8;
+      --nodefg:#FFFFFF; --ghostfg:#17202B;
+      font-family: Inter, "Segoe UI", system-ui, sans-serif;
+    }
+    @media (prefers-color-scheme: dark) {
+      .dg-dvc-dag {
+        --bg:#0D141D; --surface:#141D29; --surface2:#1B2634; --fg:#E7ECF3; --muted:#9AA9BB;
+        --line:#2B3A4C; --line2:#3C4D62; --accent:#4FB3D9; --accent2:#F0A050; --ok:#3FC27F; --err:#F26B6B;
+        --data:#A08BF0; --code:#4FB3D9; --infra:#3FC27F; --user:#F08A5B; --ai:#E27AC0; --neutral:#6B7A8C;
+        --nodefg:#0D141D; --ghostfg:#E7ECF3;
+      }
+    }
+    .dg-dvc-dag .bg { fill: var(--bg); }
+    .dg-dvc-dag text { fill: var(--fg); }
+    .dg-dvc-dag .muted { fill: var(--muted); }
+    .dg-dvc-dag .label { fill: var(--nodefg); font-weight: 600; }
+    .dg-dvc-dag .sublabel { fill: var(--nodefg); opacity: .85; }
+    .dg-dvc-dag .ghost .box { fill: var(--surface); stroke: var(--line2); stroke-dasharray: 6 5; stroke-width: 1.6; }
+    .dg-dvc-dag .ghost .label, .dg-dvc-dag .ghost .sublabel { fill: var(--ghostfg); }
+    .dg-dvc-dag .ghost .ic { color: var(--muted); }
+    .dg-dvc-dag .ic { color: var(--nodefg); }
+    .dg-dvc-dag .group { fill: var(--surface); stroke: var(--line); stroke-width: 1.5; }
+    .dg-dvc-dag .group.dashed { fill: none; stroke: var(--line2); stroke-dasharray: 7 6; }
+    .dg-dvc-dag .group.tint-data { fill: color-mix(in srgb, var(--data) 8%, var(--surface)); }
+    .dg-dvc-dag .group.tint-infra { fill: color-mix(in srgb, var(--infra) 8%, var(--surface)); }
+    .dg-dvc-dag .group.tint-user { fill: color-mix(in srgb, var(--user) 8%, var(--surface)); }
+    .dg-dvc-dag .group.tint-code { fill: color-mix(in srgb, var(--code) 8%, var(--surface)); }
+    .dg-dvc-dag .group.tint-ai { fill: color-mix(in srgb, var(--ai) 8%, var(--surface)); }
+    .dg-dvc-dag .group-title { fill: var(--muted); font-size: 11px; font-weight: 600; letter-spacing: .08em; text-transform: uppercase; }
+    .dg-dvc-dag .edge { fill: none; stroke: var(--muted); stroke-width: 2.4; stroke-linecap: round; }
+    .dg-dvc-dag .edge.thin { stroke-width: 1.6; }
+    .dg-dvc-dag .edge.dashed { stroke-dasharray: 6 6; }
+    .dg-dvc-dag .edge.flow { stroke-dasharray: 9 8; animation: dg-dvc-dag-flow 1.1s linear infinite; }
+    .dg-dvc-dag .edge.slow { animation-duration: 2.2s; }
+    .dg-dvc-dag .edge.accent { stroke: var(--accent); }
+    .dg-dvc-dag .edge.warn { stroke: var(--accent2); }
+    .dg-dvc-dag .edge.ok { stroke: var(--ok); }
+    .dg-dvc-dag .edge.err { stroke: var(--err); }
+    .dg-dvc-dag .edge.data { stroke: var(--data); }
+    .dg-dvc-dag .edge.ai { stroke: var(--ai); }
+    .dg-dvc-dag .edge.lifeline { stroke: var(--line2); stroke-width: 1.5; stroke-dasharray: 4 5; }
+    .dg-dvc-dag .arrow { fill: var(--muted); }
+    .dg-dvc-dag .arrow.accent { fill: var(--accent); } .dg-dvc-dag .arrow.warn { fill: var(--accent2); }
+    .dg-dvc-dag .arrow.ok { fill: var(--ok); } .dg-dvc-dag .arrow.err { fill: var(--err); }
+    .dg-dvc-dag .arrow.data { fill: var(--data); } .dg-dvc-dag .arrow.ai { fill: var(--ai); }
+    .dg-dvc-dag .edge-label { fill: var(--muted); font-size: 11.5px; font-family: "JetBrains Mono", Consolas, monospace; }
+    .dg-dvc-dag .edge-label.fg { fill: var(--fg); }
+    .dg-dvc-dag .edge-label-bg { fill: var(--bg); }
+    .dg-dvc-dag .badge-done { fill: var(--ok); } .dg-dvc-dag .badge-err { fill: var(--err); } .dg-dvc-dag .badge-run { fill: var(--accent2); }
+    .dg-dvc-dag .badge-ic { color: #fff; }
+    .dg-dvc-dag .note { fill: var(--muted); font-size: 12px; }
+    .dg-dvc-dag .fg { fill: var(--fg); }
+    .dg-dvc-dag .strong { font-weight: 600; }
+    .dg-dvc-dag .title { fill: var(--fg); font-size: 15px; font-weight: 600; }
+    .dg-dvc-dag .small { font-size: 11px; }
+    .dg-dvc-dag .pill { fill: var(--surface2); }
+    .dg-dvc-dag .pill-text { fill: var(--fg); font-size: 11.5px; font-weight: 600; }
+    .dg-dvc-dag .pill.user { fill: var(--user); } .dg-dvc-dag .pill.infra { fill: var(--infra); }
+    .dg-dvc-dag .pill.user .pill-text, .dg-dvc-dag .pill.infra .pill-text { fill: var(--nodefg); }
+    .dg-dvc-dag .cross { stroke: var(--err); stroke-width: 3; stroke-linecap: round; }
+    @keyframes dg-dvc-dag-flow { to { stroke-dashoffset: -34; } }
+    @media (prefers-reduced-motion: reduce) { .dg-dvc-dag .edge.flow { animation: none; } }
+  </style>
+<defs>
+<marker id="dg-dvc-dag-arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0 0 L10 5 L0 10 z" class="arrow "/></marker>
+<symbol id="dg-dvc-dag-i-check" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="m5 12 5 5L20 7"/></symbol>
+<symbol id="dg-dvc-dag-i-cross" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M6 6l12 12M18 6 6 18"/></symbol>
+<symbol id="dg-dvc-dag-i-refresh" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M20 11a8 8 0 0 0-14.5-4.5L3 9M4 13a8 8 0 0 0 14.5 4.5L21 15"/><path d="M3 4v5h5M21 20v-5h-5"/></symbol>
+<symbol id="dg-dvc-dag-i-file" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M6 2h8l5 5v15H6Z"/><path d="M14 2v5h5M9 13h6M9 17h6"/></symbol>
+<symbol id="dg-dvc-dag-i-database" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><ellipse cx="12" cy="5" rx="8" ry="3"/><path d="M4 5v14c0 1.7 3.6 3 8 3s8-1.3 8-3V5"/><path d="M4 12c0 1.7 3.6 3 8 3s8-1.3 8-3"/></symbol>
+<symbol id="dg-dvc-dag-i-gear" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M12 2v3M12 19v3M2 12h3M19 12h3M4.9 4.9l2.1 2.1M17 17l2.1 2.1M4.9 19.1 7 17M17 7l2.1-2.1"/></symbol>
+<symbol id="dg-dvc-dag-i-model" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="5" r="2.2"/><circle cx="5" cy="19" r="2.2"/><circle cx="19" cy="19" r="2.2"/><circle cx="12" cy="13" r="2.2"/><path d="M12 7.2v3.6M10.4 14.6l-4 2.8M13.6 14.6l4 2.8"/></symbol>
+<symbol id="dg-dvc-dag-i-package" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M20 7 12 3 4 7v10l8 4 8-4V7Z"/><path d="M4 7l8 4 8-4M12 11v10M8 5l8 4"/></symbol>
+<symbol id="dg-dvc-dag-i-flask" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M9 3h6M10 3v6l-5 9a2 2 0 0 0 1.7 3h10.6A2 2 0 0 0 19 18l-5-9V3"/><path d="M7.5 15h9"/></symbol>
+<symbol id="dg-dvc-dag-i-chart" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 21h18M6 17v-6M11 17V7M16 17v-3"/></symbol>
+</defs>
+<rect class="bg" width="1020" height="340" rx="18"/>
+<path class="edge flow" d="M190 148 C208 148, 208 148, 226 148" marker-end="url(#dg-dvc-dag-arrow)"/>
+<path class="edge flow" d="M390 148 C408 148, 408 148, 426 148" marker-end="url(#dg-dvc-dag-arrow)"/>
+<path class="edge flow" d="M590 148 C608 148, 608 148, 626 148" marker-end="url(#dg-dvc-dag-arrow)"/>
+<path class="edge flow" d="M790 148 C808 148, 808 148, 826 148" marker-end="url(#dg-dvc-dag-arrow)"/>
+<path class="edge flow" d="M910 176 C910 206, 750 206, 750 236" marker-end="url(#dg-dvc-dag-arrow)"/>
+<path class="edge flow" d="M510 176 C510 206, 670 206, 670 236" marker-end="url(#dg-dvc-dag-arrow)"/>
+<rect class="edge-label-bg" x="526.4" y="202" width="67.2" height="16" rx="4"/>
+<text class="edge-label " x="560" y="214" text-anchor="middle">test.csv</text>
+<path class="edge flow" d="M630 268 C612 268, 612 268, 594 268" marker-end="url(#dg-dvc-dag-arrow)"/>
+<path class="edge dashed  thin" d="M310 62 C310 89, 310 89, 310 116" marker-end="url(#dg-dvc-dag-arrow)"/>
+<rect class="edge-label-bg" x="320.2" y="80" width="39.6" height="16" rx="4"/>
+<text class="edge-label " x="340" y="92" text-anchor="middle">data</text>
+<path class="edge dashed  thin" d="M390 42 C508 42, 508 148, 626 148" marker-end="url(#dg-dvc-dag-arrow)"/>
+<rect class="edge-label-bg" x="496.75" y="58" width="46.5" height="16" rx="4"/>
+<text class="edge-label " x="520" y="70" text-anchor="middle">train</text>
+<path class="edge dashed  thin" d="M390 42 L810 42 L810 268 L794 268" marker-end="url(#dg-dvc-dag-arrow)"/>
+<rect class="edge-label-bg" x="606.4" y="32" width="67.2" height="16" rx="4"/>
+<text class="edge-label " x="640" y="44" text-anchor="middle">evaluate</text>
+<g class="node " data-id="params">
+<rect class="box" fill="var(--code)" x="230" y="22" width="160" height="40" rx="12"/>
+<use class="ic" href="#dg-dvc-dag-i-file" x="244" y="33" width="18" height="18"/>
+<text class="label" x="272" y="46.333333333333336" font-size="13">params.yaml</text>
+</g>
+<g class="node " data-id="raw">
+<rect class="box" fill="var(--data)" x="30" y="120" width="160" height="56" rx="12"/>
+<use class="ic" href="#dg-dvc-dag-i-database" x="44" y="136" width="24" height="24"/>
+<text class="label" x="78" y="146" font-size="14">data/raw/</text>
+<text class="sublabel" x="78" y="161" font-size="11">diabetes.csv</text>
+</g>
+<g class="node " data-id="prepare">
+<rect class="box" fill="var(--code)" x="230" y="120" width="160" height="56" rx="12"/>
+<use class="ic" href="#dg-dvc-dag-i-gear" x="244" y="136" width="24" height="24"/>
+<text class="label" x="278" y="146" font-size="14">prepare</text>
+<text class="sublabel" x="278" y="161" font-size="11">data.py</text>
+</g>
+<g class="node " data-id="processed">
+<rect class="box" fill="var(--data)" x="430" y="120" width="160" height="56" rx="12"/>
+<use class="ic" href="#dg-dvc-dag-i-database" x="444" y="136" width="24" height="24"/>
+<text class="label" x="478" y="146" font-size="13">data/processed/</text>
+<text class="sublabel" x="478" y="160" font-size="10">train.csv · test.csv</text>
+</g>
+<g class="node " data-id="train">
+<rect class="box" fill="var(--code)" x="630" y="120" width="160" height="56" rx="12"/>
+<use class="ic" href="#dg-dvc-dag-i-model" x="644" y="136" width="24" height="24"/>
+<text class="label" x="678" y="146" font-size="14">train</text>
+<text class="sublabel" x="678" y="161" font-size="11">train.py</text>
+</g>
+<g class="node " data-id="model">
+<rect class="box" fill="var(--data)" x="830" y="120" width="160" height="56" rx="12"/>
+<use class="ic" href="#dg-dvc-dag-i-package" x="844" y="136" width="24" height="24"/>
+<text class="label" x="878" y="146" font-size="14">models/</text>
+<text class="sublabel" x="878" y="161" font-size="11">model.joblib</text>
+</g>
+<g class="node " data-id="evaluate">
+<rect class="box" fill="var(--code)" x="630" y="240" width="160" height="56" rx="12"/>
+<use class="ic" href="#dg-dvc-dag-i-flask" x="644" y="256" width="24" height="24"/>
+<text class="label" x="678" y="266" font-size="14">evaluate</text>
+<text class="sublabel" x="678" y="281" font-size="11">evaluate.py</text>
+</g>
+<g class="node " data-id="metrics">
+<rect class="box" fill="var(--data)" x="430" y="240" width="160" height="56" rx="12"/>
+<use class="ic" href="#dg-dvc-dag-i-chart" x="444" y="256" width="24" height="24"/>
+<text class="label" x="478" y="266" font-size="14">reports/</text>
+<text class="sublabel" x="478" y="281" font-size="11">metrics.json</text>
+</g>
+<text class="note" x="510" y="322" text-anchor="middle" font-size="12">uv run dvc repro : seules les étapes dont une dépendance ou un paramètre a changé sont relancées.</text>
+</svg>

@@ -6,7 +6,7 @@ Cette formation accompagne les étudiants dans la mise en production de leurs so
 
 > Tout le matériel est en français. Les présentations sont des pages HTML animées, utilisables hors ligne. Les diagrammes sont en SVG et servent à la fois dans les slides et dans les cours.
 
-> **Présentations en ligne** : [https://marc1t.github.io/formation-deploiement-ml/](https://marc1t.github.io/formation-deploiement-ml/) · Pour travailler sur votre machine : `git clone https://github.com/Marc1T/formation-deploiement-ml.git`
+> **Présentations en ligne** : [https://marc1t.github.io/formation-deploiement-ml/](https://marc1t.github.io/formation-deploiement-ml/) · **PDF à télécharger** : [dernière version](https://github.com/Marc1T/formation-deploiement-ml/releases/latest) · Pour travailler sur votre machine : `git clone https://github.com/Marc1T/formation-deploiement-ml.git`
 
 ## Objectifs
 

@@ -254,21 +254,43 @@ default-groups = ["api", "app", "mlops", "dev"]</code></pre>
   <h2>Transformer un notebook en projet uv</h2>
   <div class="cols cols-21">
     <ol class="steps">
-      <li><strong>Créer le projet</strong> <code>uv init --package diabete-lab</code>, <code>uv python pin 3.11</code></li>
+      <li><strong>Créer le projet</strong> <code>uv init --package --python 3.11 diabete-lab</code></li>
       <li><strong>Déclarer les dépendances</strong> pandas, scikit-learn, joblib, pyyaml ; pytest et ruff en dev</li>
-      <li><strong>Ajouter le code</strong> <code>src/diabete_lab/train.py</code> et les données Pima</li>
-      <li><strong>En faire une commande</strong> <code>[project.scripts]</code> → <code>uv run diabete-train</code></li>
+      <li><strong>Données et code</strong> le CSV Pima (<code>curl</code>), <code>src/diabete_lab/train.py</code> → <code>0.740</code></li>
+      <li><strong>En faire une commande</strong> une ligne de plus dans la section <code>[project.scripts]</code> existante</li>
       <li><strong>Prouver la reproductibilité</strong> copier, supprimer <code>.venv</code>, <code>uv sync</code></li>
-      <li><strong>Git</strong> <code>.gitignore</code>, premier commit</li>
+      <li><strong>Premier commit</strong> branche <code>main</code>, <code>.gitignore</code> complété</li>
     </ol>
     <div class="card accent">
-      <h3><i data-icon="terminal"></i> Démarrage</h3>
-      <pre><code class="language-bash" data-trim>uv init --package diabete-lab
+      <h3><i data-icon="terminal"></i> Démarrage (Git Bash)</h3>
+      <pre><code class="language-bash" data-trim>uv init --package --python 3.11 diabete-lab
 cd diabete-lab
 uv add pandas scikit-learn joblib pyyaml
 uv add --dev pytest ruff</code></pre>
       <p><span class="badge">★ étapes 1 à 6</span> <span class="badge alt">★★ ruff, un test, uvx</span></p>
       <p class="small">Guide détaillé : <code>labs/lab-01-uv.md</code></p>
+    </div>
+  </div>
+</section>
+
+<section class="debrief">
+  <p class="eyebrow ok">Lab 1 · À retenir</p>
+  <h2>Ce qu'il faut retenir</h2>
+  <div class="cols cols-21">
+    <ul class="takeaways">
+      <li><i data-icon="check"></i><span><strong><code>pyproject.toml</code> dit ce que vous demandez, <code>uv.lock</code> ce que vous obtenez</strong> : toutes les versions, dépendances des dépendances comprises.</span></li>
+      <li><i data-icon="check"></i><span><strong><code>uv sync</code> recrée l'environnement à l'identique</strong> sur n'importe quelle machine ; <code>.venv</code> ne se versionne jamais.</span></li>
+      <li><i data-icon="check"></i><span><strong><code>uv run</code> exécute dans le bon environnement</strong>, sans rien activer : la commande à taper par réflexe.</span></li>
+      <li><i data-icon="check"></i><span><strong>Le code vit dans <code>src/</code> et devient une commande</strong> via <code>[project.scripts]</code> : il n'est plus prisonnier d'un notebook.</span></li>
+    </ul>
+    <div class="card soft">
+      <h3><i data-icon="terminal"></i> Commandes clés</h3>
+      <pre><code class="language-bash" data-trim>uv init --package --python 3.11 diabete-lab
+uv add pandas scikit-learn
+uv add --dev pytest ruff
+uv sync
+uv run diabete-train</code></pre>
+      <p class="small"><strong>Réussi si</strong> tout le monde obtient <code>accuracy test : 0.740</code>, copie comprise.</p>
     </div>
   </div>
 </section>
@@ -379,20 +401,43 @@ uv add --dev pytest ruff</code></pre>
   <h2>Un pipeline reproductible avec DVC</h2>
   <div class="cols cols-21">
     <ol class="steps">
-      <li><strong>Installer et initialiser</strong> <code>uv add --group mlops dvc</code>, <code>uv run dvc init</code></li>
-      <li><strong>Versionner les données</strong> <code>dvc add</code>, remote local, <code>dvc push</code>, puis simuler un collègue avec <code>dvc pull</code></li>
+      <li><strong>Installer</strong> <code>uv add --group mlops dvc</code>, <code>default-groups = "all"</code>, <code>uv run dvc init</code></li>
+      <li><strong>Confier les données à DVC</strong> <code>git rm --cached</code>, <code>dvc add</code>, remote local, <code>dvc push</code> puis <code>dvc pull</code></li>
       <li><strong>Découper en étapes</strong> <code>prepare.py</code> et <code>train.py</code>, paramètres dans <code>params.yaml</code></li>
-      <li><strong>Décrire le pipeline</strong> <code>dvc.yaml</code> avec deps, params, outs, metrics</li>
-      <li><strong>Constater la mise en cache</strong> changer <code>max_depth</code>, <code>dvc repro</code>, <code>params diff</code>, <code>metrics diff</code></li>
+      <li><strong>Décrire le pipeline</strong> <code>dvc.yaml</code>, <code>dvc repro</code> → <code>0.7338</code>, tout commiter</li>
+      <li><strong>Constater la mise en cache</strong> <code>max_depth</code> 6 → 10 : seul <code>train</code> se relance</li>
     </ol>
     <div class="card accent">
-      <h3><i data-icon="terminal"></i> Démarrage</h3>
+      <h3><i data-icon="terminal"></i> Démarrage (Git Bash)</h3>
       <pre><code class="language-bash" data-trim>uv add --group mlops dvc
-uv run dvc init
-uv run dvc add data/raw/diabetes.csv
-uv run dvc remote add -d local ../dvc-remote</code></pre>
+# pyproject.toml : [tool.uv] default-groups = "all"
+uv sync &amp;&amp; uv run dvc init
+git rm --cached data/raw/diabetes.csv
+uv run dvc add data/raw/diabetes.csv</code></pre>
       <p><span class="badge">★ étapes 1 à 5</span> <span class="badge alt">★★ dvc exp, plots, remote cloud</span></p>
       <p class="small">Guide détaillé : <code>labs/lab-02-dvc.md</code></p>
+    </div>
+  </div>
+</section>
+
+<section class="debrief">
+  <p class="eyebrow ok">Lab 2 · À retenir</p>
+  <h2>Ce qu'il faut retenir</h2>
+  <div class="cols cols-21">
+    <ul class="takeaways">
+      <li><i data-icon="check"></i><span><strong>Git versionne le code et un petit pointeur, DVC le contenu lourd</strong> : le remote stocke les données, <code>push</code> et <code>pull</code> les partagent.</span></li>
+      <li><i data-icon="check"></i><span><strong>Un fichier est suivi par Git ou par DVC, jamais les deux</strong> : <code>git rm --cached</code> avant <code>dvc add</code>.</span></li>
+      <li><i data-icon="check"></i><span><strong><code>dvc.yaml</code> décrit le pipeline, <code>dvc.lock</code> enregistre son état</strong> : les deux se commitent, avec <code>params.yaml</code>.</span></li>
+      <li><i data-icon="check"></i><span><strong><code>dvc repro</code> ne relance que ce qui a changé</strong> ; <code>params diff</code> et <code>metrics diff</code> mesurent l'effet d'un changement.</span></li>
+    </ul>
+    <div class="card soft">
+      <h3><i data-icon="terminal"></i> Commandes clés</h3>
+      <pre><code class="language-bash" data-trim>git rm --cached data/raw/diabetes.csv
+uv run dvc add data/raw/diabetes.csv
+uv run dvc push      # dvc pull
+uv run dvc repro
+uv run dvc metrics diff</code></pre>
+      <p class="small"><strong>Réussi si</strong> <code>metrics diff</code> passe de <code>0.7338</code> à <code>0.7468</code> avec <code>max_depth: 10</code>, et <code>git status</code> est vide après le commit.</p>
     </div>
   </div>
 </section>
@@ -443,7 +488,7 @@ uv run dvc remote add -d local ../dvc-remote</code></pre>
 <section>
   <p class="eyebrow">MLflow · projet fil rouge</p>
   <h2>Dans le code</h2>
-  <pre data-title="src/diabetes_ml/train.py (extrait)"><code class="language-python" data-trim data-line-numbers="1-4|6-7|8-10|11">import mlflow, mlflow.sklearn
+  <pre data-title="src/diabetes_ml/train.py (extrait)"><code class="language-python" data-trim data-line-numbers="1-4|6-7|8-9|10-12|13">import mlflow, mlflow.sklearn
 
 mlflow.set_tracking_uri("sqlite:///mlflow.db")      # où stocker
 mlflow.set_experiment("diabetes-risk")
@@ -452,10 +497,12 @@ with mlflow.start_run(run_name="random_forest") as run:
     mlflow.log_params({"n_estimators": 200, "max_depth": 6})
     pipe, metrics = fit(train_df, params)
     mlflow.log_metrics(metrics)                       # cv_accuracy, cv_roc_auc, …
-    mlflow.sklearn.log_model(pipe, name="model", input_example=example)
+    mlflow.sklearn.log_model(
+        pipe, name="model", input_example=example,
+        serialization_format=mlflow.sklearn.SERIALIZATION_FORMAT_CLOUDPICKLE)
     print(run.info.run_id)                            # identifiant unique du run</code></pre>
   <div class="cols mt-s">
-    <div class="callout fragment"><i data-icon="sparkle"></i><p><code>mlflow.sklearn.autolog()</code> enregistre tout seul les hyperparamètres et métriques de scikit-learn. Pratique pour démarrer, moins lisible qu'un log explicite.</p></div>
+    <div class="callout warn fragment"><i data-icon="warning"></i><p><strong><code>serialization_format</code> est indispensable</strong> avec MLflow 3 récent : son format par défaut (<em>skops</em>) refuse les arbres d'une forêt aléatoire et l'entraînement plante sur <code>untrusted types</code>.</p></div>
     <div class="callout ok fragment"><i data-icon="branch"></i><p>Dans le fil rouge, <code>dvc repro</code> relance <code>train</code>, qui crée un run : DVC orchestre, MLflow trace.</p></div>
   </div>
 </section>
@@ -478,7 +525,8 @@ with mlflow.start_run(run_name="random_forest") as run:
       <pre data-title="terminal"><code class="language-bash" data-trim>uv run python -c "import mlflow; mlflow.set_tracking_uri('sqlite:///mlflow.db'); \
   print(mlflow.register_model('runs:/&lt;RUN_ID&gt;/model', 'diabetes-risk'))"
 
-uv run mlflow models serve -m "models:/diabetes-risk/1" -p 5001 --no-conda</code></pre>
+export MLFLOW_TRACKING_URI=sqlite:///mlflow.db
+uv run mlflow models serve -m "models:/diabetes-risk/1" -p 5001 --env-manager local</code></pre>
     </div>
     <div class="stack">
       <div class="callout warn"><i data-icon="database"></i><p>Le registre demande un backend base de données : <code>sqlite:///mlflow.db</code> suffit en local. Un simple dossier <code>mlruns/</code> ne le supporte pas.</p></div>
@@ -507,20 +555,43 @@ uv run mlflow models serve -m "models:/diabetes-risk/1" -p 5001 --no-conda</code
   <h2>Tracer et comparer avec MLflow</h2>
   <div class="cols cols-21">
     <ol class="steps">
-      <li><strong>Installer</strong> <code>uv add --group mlops mlflow</code></li>
-      <li><strong>Instrumenter <code>train.py</code></strong> tracking URI, expérience, <code>start_run</code>, <code>log_params</code>, <code>log_metric</code>, <code>log_model</code></li>
-      <li><strong>Produire trois runs</strong> profondeur 6, 3 et 12 (avec <code>dvc exp run</code> ou à la main)</li>
+      <li><strong>Installer</strong> <code>uv add --group mlops mlflow</code>, <code>mlflow.db</code> dans le <code>.gitignore</code></li>
+      <li><strong>Instrumenter <code>train.py</code></strong> <code>start_run</code>, <code>log_params</code>, <code>log_metric</code>, <code>log_model</code> avec <code>serialization_format</code></li>
+      <li><strong>Produire trois runs</strong> profondeur 6, 3 et 12 avec <code>dvc exp run</code> → <code>0.734</code>, <code>0.734</code>, <code>0.740</code></li>
       <li><strong>Comparer dans l'interface</strong> trier, <em>Compare</em>, regarder les artefacts</li>
-      <li><strong>Enregistrer le meilleur</strong> <code>register_model</code>, puis <code>mlflow models serve</code></li>
+      <li><strong>Enregistrer et servir</strong> <code>register_model</code>, <code>mlflow models serve</code>, un <code>curl</code></li>
     </ol>
     <div class="card accent">
-      <h3><i data-icon="terminal"></i> Démarrage</h3>
+      <h3><i data-icon="terminal"></i> Démarrage (Git Bash)</h3>
       <pre><code class="language-bash" data-trim>uv add --group mlops mlflow
 # … instrumenter train.py …
 uv run dvc repro
+uv run dvc exp run --set-param train.max_depth=12
 uv run mlflow ui --backend-store-uri sqlite:///mlflow.db</code></pre>
-      <p><span class="badge">★ étapes 1 à 5</span> <span class="badge alt">★★ autolog, tags, serveur partagé</span></p>
+      <p><span class="badge">★ étapes 1 à 5</span> <span class="badge alt">★★ autolog, validation croisée, serveur partagé</span></p>
       <p class="small">Guide détaillé : <code>labs/lab-03-mlflow.md</code></p>
+    </div>
+  </div>
+</section>
+
+<section class="debrief">
+  <p class="eyebrow ok">Lab 3 · À retenir</p>
+  <h2>Ce qu'il faut retenir</h2>
+  <div class="cols cols-21">
+    <ul class="takeaways">
+      <li><i data-icon="check"></i><span><strong>Un run par entraînement</strong> : paramètres, métriques et modèle sont enregistrés à chaque exécution, sans tableau à tenir à la main.</span></li>
+      <li><i data-icon="check"></i><span><strong>L'interface compare, c'est vous qui jugez</strong> : 0,740 contre 0,734, c'est une patiente sur 154, pas une amélioration.</span></li>
+      <li><i data-icon="check"></i><span><strong>Le registre nomme et versionne le modèle retenu</strong> : on déploie <code>diabete-risque</code> v1, pas un chemin de fichier.</span></li>
+      <li><i data-icon="check"></i><span><strong>DVC orchestre, MLflow trace</strong> : chaque expérience est à la fois reproductible et comparable.</span></li>
+    </ul>
+    <div class="card soft">
+      <h3><i data-icon="terminal"></i> Commandes clés</h3>
+      <pre><code class="language-bash" data-trim>uv run dvc exp run --set-param train.max_depth=12
+uv run mlflow ui --backend-store-uri sqlite:///mlflow.db
+# register_model('runs:/&lt;RUN_ID&gt;/model', 'diabete-risque')
+uv run mlflow models serve -m "models:/diabete-risque/1" \
+  -p 5001 --env-manager local</code></pre>
+      <p class="small"><strong>Réussi si</strong> le <code>curl</code> sur <code>/invocations</code> répond <code>{"predictions": [1]}</code>.</p>
     </div>
   </div>
 </section>
@@ -535,6 +606,22 @@ uv run mlflow ui --backend-store-uri sqlite:///mlflow.db</code></pre>
     <div class="card fragment" data-kind="data"><h3><i data-icon="chart"></i> MLflow</h3><p>Un run par entraînement, des paramètres et métriques explicites, l'interface pour comparer, le registre pour nommer le modèle qui part en production.</p></div>
   </div>
   <div class="callout ok mt fragment"><i data-icon="check"></i><p>Trois fichiers de vérité : <code>pyproject.toml</code> + <code>uv.lock</code> (code), <code>dvc.yaml</code> + <code>dvc.lock</code> (pipeline), l'historique MLflow (expériences). Rien de lourd ni de secret dans Git.</p></div>
+</section>
+
+<section class="quiz">
+  <p class="eyebrow">Auto-évaluation</p>
+  <h2>Huit questions pour vérifier</h2>
+  <ol class="quiz-list">
+    <li>Quelle différence entre <code>pyproject.toml</code> et <code>uv.lock</code> ? Lequel garantit les mêmes versions chez un collègue ?</li>
+    <li>Pourquoi ne commite-t-on jamais <code>.venv</code> ?</li>
+    <li><code>python train.py</code> donne <code>No module named 'pandas'</code> alors que <code>uv add pandas</code> a réussi. Pourquoi ?</li>
+    <li>Que contient <code>diabetes.csv.dvc</code>, et où est le contenu réel du CSV ?</li>
+    <li>Vous changez <code>max_depth</code>. Quelles étapes <code>dvc repro</code> relance-t-il, et comment le sait-il ?</li>
+    <li>Pourquoi <code>cache: false</code> sur <code>reports/metrics.json</code> ?</li>
+    <li>0,734 contre 0,740 sur 154 patientes : le second modèle est-il meilleur ?</li>
+    <li>À quoi sert le registre, puisque <code>models/model.joblib</code> existe déjà ?</li>
+  </ol>
+  <p class="small mt">Mémo des commandes : <code>seance-1-fondations/memo.md</code> · Réponses publiées avec les solutions des labs.</p>
 </section>
 
 <section>

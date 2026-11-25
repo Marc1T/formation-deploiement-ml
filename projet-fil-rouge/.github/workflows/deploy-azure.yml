@@ -43,10 +43,12 @@ jobs:
       - name: Mettre à jour l'image de la Container App
         run: |
           az extension add --name containerapp --upgrade --only-show-errors
+          # Un nom d'image Docker doit être en minuscules : ${GITHUB_REPOSITORY,,} convertit.
+          IMAGE="ghcr.io/${GITHUB_REPOSITORY,,}/api:${{ inputs.tag }}"
           az containerapp update \
             --name "${{ inputs.app_name }}" \
             --resource-group "${{ inputs.resource_group }}" \
-            --image "ghcr.io/${{ github.repository }}/api:${{ inputs.tag }}" \
+            --image "$IMAGE" \
             --output none
           FQDN=$(az containerapp show --name "${{ inputs.app_name }}" \
             --resource-group "${{ inputs.resource_group }}" \

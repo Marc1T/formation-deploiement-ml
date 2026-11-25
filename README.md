@@ -42,7 +42,7 @@ Variante en 2 séances : fusionner les séances 1 et 2 en gardant uv, MLflow, Fa
 
 **Avant la séance 1**, chaque participant suit la checklist des [prérequis](00-prerequis/README.md) : installations et création des comptes (GitHub, Azure for Students, Google, Streamlit Community Cloud). La vérification du compte Azure for Students peut prendre plusieurs jours : à lancer tôt.
 
-**Pendant une séance**, le formateur projette la présentation de la séance ; les étudiants suivent le `README.md` de cours et font les labs du dossier `labs/`. Les solutions de chaque lab sont publiées dans `labs/solutions/` après la séance correspondante.
+**Pendant une séance**, le formateur projette la présentation de la séance ; les étudiants suivent le `README.md` de cours et font les labs du dossier `labs/`, chacun conclu par une section « À retenir » ; le `memo.md` de la séance regroupe toutes les commandes sur une page. Les solutions de chaque lab sont publiées dans `labs/solutions/` après la séance correspondante.
 
 **Le projet fil rouge** ([projet-fil-rouge/](projet-fil-rouge/README.md)) est un dépôt complet et fonctionnel : modèle, pipeline DVC, suivi MLflow, API, interface web, Docker, CI et scripts de déploiement. Il sert de référence pendant les labs et de modèle à copier pour son propre projet.
 
@@ -52,9 +52,9 @@ Variante en 2 séances : fusionner les séances 1 et 2 en gardant uv, MLflow, Fa
 deployment/
 ├── index.html                   Page d'accueil : accès aux decks, cours et fil rouge
 ├── 00-prerequis/                Installations et comptes à créer avant la séance 1
-├── seance-1-fondations/         Cours, slides.html, labs 1 à 3
-├── seance-2-application-web/    Cours, slides.html, labs 4 à 7
-├── seance-3-cloud/              Cours, slides.html, labs 8 à 11
+├── seance-1-fondations/         Cours, slides.html, mémo des commandes, labs 1 à 3
+├── seance-2-application-web/    Cours, slides.html, mémo des commandes, labs 4 à 7
+├── seance-3-cloud/              Cours, slides.html, mémo des commandes, labs 8 à 11
 ├── projet-fil-rouge/            Dépôt de démonstration complet
 ├── ressources/                  Comparatif cloud, checklist de mise en production, glossaire, liens
 └── assets/                      Thème, animations, diagrammes SVG, reveal.js et polices inclus

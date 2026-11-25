@@ -2,7 +2,9 @@
 
 **Durée** : 25 min · **Objectif** : partir d'un script d'entraînement « à plat » et obtenir un projet que `uv sync` réinstalle à l'identique sur n'importe quelle machine.
 
-Vous travaillez dans votre propre dossier, à côté du fil rouge. Le fil rouge sert de modèle : ouvrez [projet-fil-rouge/pyproject.toml](../../projet-fil-rouge/pyproject.toml) dans un onglet.
+**Terminal** : Git Bash sous Windows (installé avec Git ; dans VS Code, menu déroulant du terminal → *Git Bash*), Terminal sous macOS et Linux. Toutes les commandes des labs sont écrites pour ce shell.
+
+**Point de départ** : uv et Git installés et configurés ([prérequis](../../00-prerequis/README.md)). Le projet fil rouge sert de modèle : gardez [projet-fil-rouge/pyproject.toml](../../projet-fil-rouge/pyproject.toml) ouvert dans un onglet.
 
 ## ★ Parcours de base
 
@@ -10,13 +12,17 @@ Vous travaillez dans votre propre dossier, à côté du fil rouge. Le fil rouge 
 
 ```bash
 cd <votre dossier de travail>
-uv init --package diabete-lab        # structure src/, pyproject.toml, README, .python-version
+uv init --package --python 3.11 diabete-lab
 cd diabete-lab
-uv python pin 3.11                   # fige la version de Python
-tree /f  (Windows)   ou   ls -R      # regardez ce qui a été créé
+ls -a
+cat pyproject.toml
 ```
 
-Question : pourquoi `uv init --package` crée-t-il un dossier `src/diabete_lab/` plutôt que des fichiers à la racine ?
+`uv init` a créé : `pyproject.toml`, `.python-version`, `README.md`, `src/diabete_lab/__init__.py`, un `.gitignore`, et un dépôt Git. L'option `--python 3.11` fixe la version de Python du projet ; sans elle, uv prend la plus récente installée sur votre machine, qui n'est pas forcément celle de vos camarades ni celle des images Docker de la séance 2.
+
+> **Point de contrôle** : `cat .python-version` affiche `3.11`, et `pyproject.toml` contient `requires-python = ">=3.11"`.
+
+Question : pourquoi `uv init --package` range-t-il le code dans `src/diabete_lab/` plutôt qu'à la racine ?
 
 ### 2. Déclarer les dépendances
 
@@ -25,11 +31,24 @@ uv add pandas scikit-learn joblib pyyaml
 uv add --dev pytest ruff
 ```
 
-Ouvrez `pyproject.toml` : les dépendances y sont écrites avec une borne basse (`pandas>=2.3`). Ouvrez `uv.lock` : chaque paquet y a une version exacte et un hash. Combien de paquets ont été installés alors que vous n'en avez demandé que quatre ?
+Ouvrez `pyproject.toml` : les dépendances y sont écrites avec une borne basse (`pandas>=…`). Ouvrez `uv.lock` : chaque paquet y a une version exacte et une empreinte (hash).
 
-### 3. Ajouter le code d'entraînement
+```bash
+grep -c '^\[\[package\]\]' uv.lock     # nombre de paquets figés dans uv.lock
+uv tree --depth 1                      # vos dépendances directes et ce qu'elles entraînent
+```
 
-Copiez les données : [projet-fil-rouge/data/raw/diabetes.csv](../../projet-fil-rouge/data/raw/diabetes.csv) dans `data/raw/`.
+Question : combien de paquets sont figés dans `uv.lock`, alors que vous n'en avez demandé que six ?
+
+### 3. Récupérer les données et ajouter le code d'entraînement
+
+```bash
+mkdir -p data/raw
+curl -L -o data/raw/diabetes.csv https://raw.githubusercontent.com/Marc1T/formation-deploiement-ml/main/projet-fil-rouge/data/raw/diabetes.csv
+wc -l data/raw/diabetes.csv
+```
+
+> **Point de contrôle** : `wc -l` affiche `769` (une ligne d'en-tête et 768 patientes).
 
 Créez `src/diabete_lab/train.py` :
 
@@ -75,55 +94,82 @@ Lancez-le **avec uv** :
 uv run python -m diabete_lab.train
 ```
 
+> **Point de contrôle** : `accuracy test : 0.740`, et un fichier `models/model.joblib` existe. Tout le monde doit obtenir exactement la même valeur : même code, mêmes données, mêmes versions, même graine aléatoire.
+
 ### 4. En faire une commande
 
-Dans `pyproject.toml`, ajoutez :
+`uv init --package` a déjà créé une section `[project.scripts]` dans `pyproject.toml`. **Ajoutez une ligne dans cette section** (n'en créez pas une seconde, le fichier deviendrait invalide) :
 
 ```toml
 [project.scripts]
+diabete-lab = "diabete_lab:main"
 diabete-train = "diabete_lab.train:main"
 ```
 
-Puis `uv sync` et `uv run diabete-train`. Le script est maintenant une commande installée dans l'environnement.
+```bash
+uv sync
+uv run diabete-train
+```
+
+Le script est maintenant une commande installée dans l'environnement du projet.
 
 ### 5. Prouver la reproductibilité
 
 ```bash
 cd ..
-cp -r diabete-lab diabete-lab-copie      # (ou copier-coller le dossier)
+cp -r diabete-lab diabete-lab-copie
 cd diabete-lab-copie
-rm -rf .venv                            # on supprime l'environnement
-uv sync                                 # ... et on le recrée à l'identique
+rm -rf .venv                 # on supprime l'environnement…
+uv sync                      # … et on le recrée à l'identique depuis uv.lock
 uv run diabete-train
+cd ../diabete-lab
 ```
 
-Même résultat, même versions : c'est tout l'intérêt de `uv.lock`. Comparez le temps de ce second `uv sync` avec le premier : uv réutilise son cache.
+> **Point de contrôle** : la copie affiche aussi `accuracy test : 0.740`. Le second `uv sync` prend quelques secondes : uv réutilise son cache.
 
-### 6. Git
+### 6. Premier commit
+
+`uv init` a déjà créé le dépôt Git et un `.gitignore` qui exclut `.venv` et `__pycache__`. On renomme la branche, on complète le `.gitignore`, on commite.
 
 ```bash
-cd ../diabete-lab
-git init -b main
-printf ".venv/\n__pycache__/\nmodels/\n.env\n" > .gitignore
-git add . && git commit -m "Projet uv : entraînement reproductible"
+git status
+git branch -M main
+printf "\n# Formation\nmodels/\n.env\n" >> .gitignore
+git add .
+git commit -m "Projet uv : entraînement reproductible"
+git ls-files
 ```
+
+> **Point de contrôle** : `git ls-files` liste `pyproject.toml`, `uv.lock`, `.python-version`, `src/diabete_lab/train.py` et `data/raw/diabetes.csv`, mais ni `.venv/` ni `models/`.
+
+Le CSV est commité dans Git pour l'instant. Au lab 2, vous le confierez à DVC : c'est exactement ce qui arrive dans les vrais projets quand les données grossissent.
 
 ## ★★ Aller plus loin
 
-- **Ruff** : `uv run ruff check .` puis `uv run ruff format .`. Ajoutez dans `pyproject.toml` une section `[tool.ruff]` avec `line-length = 100`.
+- **Ruff** : `uv run ruff check .` puis `uv run ruff format .`. Ajoutez dans `pyproject.toml` une section `[tool.ruff]` avec `line-length = 100`. Que change `ruff format` dans `train.py` ?
 - **Un test** : créez `tests/test_train.py` qui importe `FEATURES` et vérifie qu'il y a 8 variables ; `uv run pytest`.
 - **Mettre à jour une dépendance** : `uv lock --upgrade-package scikit-learn` puis `git diff uv.lock` pour voir exactement ce qui a changé.
-- **Outils hors projet** : `uvx cowsay -t "uv"`, `uv tool install ruff`. Quelle différence avec `uv add --dev` ?
+- **Outils hors projet** : `uvx pycowsay "uv"`, `uv tool install ruff`. Quelle différence avec `uv add --dev` ?
 
 ## Dépannage
 
 | Symptôme | Cause | Solution |
 |---|---|---|
+| `requested Python version 3.11 is incompatible with requires-python >=3.13` | projet créé sans `--python 3.11` | dans `pyproject.toml`, mettre `requires-python = ">=3.11"`, puis `uv python pin 3.11` |
+| `TOML parse error … duplicate key` | une seconde section `[project.scripts]` | ne garder qu'une section, avec les deux lignes |
 | `No module named diabete_lab` | lancé avec `python` au lieu de `uv run python` | toujours `uv run …` |
-| `uv: command not found` | PATH non rechargé | rouvrir le terminal |
-| `error: Failed to build` | `README.md` manquant alors que `pyproject.toml` le référence | créer le README ou retirer la ligne `readme = …` |
-| Lenteur au premier `uv sync` | téléchargement de scikit-learn et scipy | normal une fois ; ensuite le cache sert |
+| `uv: command not found` | terminal ouvert avant l'installation | fermer et rouvrir le terminal |
+| `Failed to build` : `Readme file does not exist` | `README.md` supprimé alors que `pyproject.toml` le référence | recréer le README ou retirer la ligne `readme = …` |
+| `Please tell me who you are` au commit | identité Git non configurée | `git config --global user.name "…"` et `user.email "…"` |
+| Lenteur du premier `uv add` | téléchargement de scikit-learn et scipy | normal une fois ; ensuite le cache sert |
 
-## Ce qu'il faut retenir
+## À retenir
 
-`pyproject.toml` dit ce que vous voulez, `uv.lock` dit ce que vous avez, `uv sync` fait coïncider les deux, `uv run` exécute dedans. Solution complète : publiée après la séance.
+- **`pyproject.toml` dit ce que vous demandez, `uv.lock` ce que vous obtenez** : toutes les versions, dépendances des dépendances comprises, figées et commitées.
+- **`uv sync` recrée l'environnement à l'identique** sur n'importe quelle machine ; `.venv` ne se versionne jamais.
+- **`uv run` exécute dans le bon environnement** sans rien activer : c'est la commande à taper par réflexe.
+- **Le code vit dans `src/` et devient une commande** via `[project.scripts]` : il n'est plus prisonnier d'un notebook.
+
+## Solution
+
+Solution complète : publiée après la séance.

@@ -1,0 +1,19 @@
+# Ce que `gcloud builds submit` n'envoie pas à Cloud Build (deploy/gcp/deploy.sh).
+# Sans ce fichier, gcloud reprendrait le .gitignore, qui exclut models/ : l'image serait
+# construite sans modèle. Même contenu que .dockerignore.
+.git
+.venv
+.dvc/cache
+.dvc/tmp
+__pycache__
+*.pyc
+.pytest_cache
+.ruff_cache
+mlruns
+mlflow.db
+mlartifacts
+data/processed
+reports
+tests
+.env
+app/.streamlit/secrets.toml

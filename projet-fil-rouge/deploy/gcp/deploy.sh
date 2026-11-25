@@ -41,7 +41,7 @@ gcloud run deploy "$SERVICE" \
   --port 8000 \
   --cpu 1 --memory 1Gi \
   --min-instances 0 --max-instances 1 \
-  --set-env-vars MODEL_PATH=/app/models/model.joblib,THRESHOLD=0.5 \
+  --set-env-vars THRESHOLD=0.5 \
   --quiet
 
 URL="$(gcloud run services describe "$SERVICE" --region "$REGION" --format 'value(status.url)')"

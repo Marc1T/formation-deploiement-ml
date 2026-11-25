@@ -96,7 +96,7 @@ if ($appExists) {
     --min-replicas 0 `
     --max-replicas 1 `
     --cpu 0.5 --memory 1.0Gi `
-    --env-vars MODEL_PATH=/app/models/model.joblib THRESHOLD=0.5 `
+    --env-vars THRESHOLD=0.5 `
     @registryArgs `
     --output none
 }

@@ -1,8 +1,10 @@
 # Lab 10 (optionnel) · Déployer l'API sur Google Cloud Run
 
-**Durée** : 25 min · **Objectif** : la même API, déployée sur Google Cloud avec Cloud Build, Artifact Registry et Cloud Run. Comparer avec Azure.
+**Durée** : 25 min · **Objectif** : la même API, déployée sur Google Cloud avec Cloud Build, Artifact Registry et Cloud Run ; comparer avec Azure.
 
-Ce lab demande un projet Google Cloud **avec facturation activée** (essai gratuit avec carte bancaire, ou coupon de crédits fourni par l'enseignant). Sans projet, suivez la démonstration et lisez les commandes : elles sont le miroir de celles d'Azure. Script de référence : [projet-fil-rouge/deploy/gcp/deploy.sh](../../projet-fil-rouge/deploy/gcp/deploy.sh).
+**Terminal** : Git Bash sous Windows, Terminal sous macOS et Linux.
+
+**Point de départ** : le projet `diabete-lab`, avec un modèle entraîné (`uv run dvc repro`), et un projet Google Cloud **avec facturation activée** (essai gratuit avec carte bancaire, ou coupon de crédits fourni par l'enseignant). Sans projet, suivez la démonstration : les commandes sont le miroir de celles d'Azure. Script de référence : [projet-fil-rouge/deploy/gcp/deploy.sh](../../projet-fil-rouge/deploy/gcp/deploy.sh).
 
 ## ★ Parcours
 
@@ -12,68 +14,101 @@ Ce lab demande un projet Google Cloud **avec facturation activée** (essai gratu
 
 ```bash
 gcloud auth login
-gcloud config set project <PROJECT_ID>
+PROJECT_ID=<votre-projet>
+REGION=europe-west1
+gcloud config set project "$PROJECT_ID"
 gcloud services enable run.googleapis.com artifactregistry.googleapis.com cloudbuild.googleapis.com
 ```
 
 ### 2. Un dépôt d'images
 
 ```bash
-gcloud artifacts repositories create diabetes-ml --repository-format docker --location europe-west1
+gcloud artifacts repositories create diabete-lab --repository-format docker --location "$REGION"
+IMAGE="$REGION-docker.pkg.dev/$PROJECT_ID/diabete-lab/api:latest"
 ```
 
-Artifact Registry est l'équivalent d'Azure Container Registry ou de ghcr.io.
+Artifact Registry joue le rôle de ghcr.io ou d'Azure Container Registry.
 
-### 3. Construire dans le cloud
+### 3. Dire à Cloud Build quoi envoyer et quoi construire
+
+Sans fichier `.gcloudignore`, `gcloud` reprend votre `.gitignore`… qui exclut `models/`. L'image serait construite sans modèle. Créez `.gcloudignore` à la racine, calqué sur `.dockerignore` :
+
+```
+.git
+.venv
+.dvc/cache
+data
+mlflow.db
+mlruns
+mlartifacts
+tests
+.env
+```
+
+Votre Dockerfile n'est pas à la racine (`docker/api.Dockerfile`) : créez `cloudbuild.yaml` pour l'indiquer à Cloud Build.
+
+```yaml
+steps:
+  - name: gcr.io/cloud-builders/docker
+    args: ["build", "-f", "docker/api.Dockerfile", "-t", "${_IMAGE}", "."]
+images:
+  - "${_IMAGE}"
+options:
+  logging: CLOUD_LOGGING_ONLY
+```
+
+### 4. Construire dans le cloud
 
 ```bash
-IMAGE=europe-west1-docker.pkg.dev/<PROJECT_ID>/diabetes-ml/api:latest
-gcloud builds submit . --config deploy/gcp/cloudbuild.yaml --substitutions _IMAGE=$IMAGE
+gcloud builds submit . --config cloudbuild.yaml --substitutions "_IMAGE=$IMAGE"
 ```
 
-Cloud Build envoie votre dossier (sans ce que `.gcloudignore` ou `.dockerignore` excluent), exécute `docker build -f docker/api.Dockerfile` et pousse l'image. Pas de Docker local nécessaire : comme `az acr build`.
+Cloud Build envoie votre dossier (moins ce que `.gcloudignore` exclut), exécute `docker build` et pousse l'image : pas de Docker local nécessaire, comme `az acr build`.
 
-### 4. Déployer
+### 5. Déployer
 
 ```bash
 gcloud run deploy diabetes-api \
-  --image $IMAGE \
-  --region europe-west1 \
+  --image "$IMAGE" \
+  --region "$REGION" \
   --allow-unauthenticated \
   --port 8000 \
   --cpu 1 --memory 1Gi \
   --min-instances 0 --max-instances 1 \
-  --set-env-vars MODEL_PATH=/app/models/model.joblib,THRESHOLD=0.5
-gcloud run services describe diabetes-api --region europe-west1 --format 'value(status.url)'
+  --set-env-vars THRESHOLD=0.5
+URL=$(gcloud run services describe diabetes-api --region "$REGION" --format 'value(status.url)')
+curl "$URL/health"
 ```
 
-Ouvrez `<url>/docs`. Cloud Run injecte la variable `PORT` ; notre Dockerfile lance `uvicorn … --port ${PORT}` précisément pour cela.
+> **Point de contrôle** : `{"status":"ok"}`, et `$URL/predict` renvoie `0.5838` pour le patient d'exemple, comme sur Azure.
 
-### 5. Comparer
+Cloud Run transmet le port à l'application par la variable `PORT` : c'est pour cela que la commande du Dockerfile lance `uvicorn … --port ${PORT}`.
+
+### 6. Comparer
 
 | | Azure Container Apps | Cloud Run |
 |---|---|---|
 | Unité | Container App dans un Environment | Service dans un projet |
 | Construire sans Docker | `az acr build` | `gcloud builds submit` |
 | Registre | ACR, ou ghcr.io | Artifact Registry |
-| Port | `--target-port` | variable `PORT` imposée |
+| Port | `--target-port` | variable `PORT`, ou `--port` |
 | Échelle à zéro | `--min-replicas 0` | `--min-instances 0` |
 | Journaux | `az containerapp logs show` | `gcloud run services logs read` |
-| Tout supprimer | `az group delete` | supprimer le service, le dépôt, ou le projet |
+| Tout supprimer | `az group delete` | supprimer le service et le dépôt, ou le projet |
 
-Les concepts sont identiques ; seuls les noms changent. C'est la raison d'apprendre la chaîne générique (image Docker + variables d'environnement) plutôt qu'un fournisseur.
+Les concepts sont identiques, seuls les noms changent : c'est pour cela qu'on apprend la chaîne générique (une image Docker configurée par des variables) plutôt qu'un fournisseur.
 
-### 6. Nettoyer
+### 7. Nettoyer
 
 ```bash
-gcloud run services delete diabetes-api --region europe-west1 --quiet
-gcloud artifacts repositories delete diabetes-ml --location europe-west1 --quiet
+gcloud run services delete diabetes-api --region "$REGION" --quiet
+gcloud artifacts repositories delete diabete-lab --location "$REGION" --quiet
 ```
 
 ## ★★ Aller plus loin
 
-- **Vertex AI** : dans la console, *Model Registry → Import* avec un conteneur de prédiction personnalisé : votre image d'API peut devenir un modèle Vertex, servi par un *Endpoint* avec autoscaling et monitoring. Lisez les prérequis (routes `/health` et `/predict` configurables, port 8080) : notre API les respecte presque.
-- **Service authentifié** : retirez `--allow-unauthenticated` et appelez l'API avec `curl -H "Authorization: Bearer $(gcloud auth print-identity-token)"`.
+- **Vertex AI** : *Model Registry → Import* avec un conteneur de prédiction personnalisé. Lisez ses exigences (port `AIP_HTTP_PORT`, routes de santé et de prédiction, format `{"instances": [...]}`) : que faudrait-il ajouter à votre API ?
+- **Service authentifié** : redéployez avec `--no-allow-unauthenticated` et appelez l'API avec `curl -H "Authorization: Bearer $(gcloud auth print-identity-token)" "$URL/health"`.
 - **Coût** : *Billing → Reports* après quelques appels. Combien a coûté ce lab ?
 
 ## Dépannage
@@ -81,8 +116,17 @@ gcloud artifacts repositories delete diabetes-ml --location europe-west1 --quiet
 | Symptôme | Cause | Solution |
 |---|---|---|
 | `Billing account … is not enabled` | projet sans facturation | activer l'essai ou appliquer le coupon |
-| `PERMISSION_DENIED` sur Cloud Build | API pas activée ou rôle manquant | relancer `gcloud services enable …` ; être *Owner* du projet |
-| Le conteneur ne démarre pas (« failed to start and listen on the port ») | l'application n'écoute pas `PORT` | vérifier la commande du Dockerfile |
-| Image introuvable au déploiement | région ou nom du dépôt différents entre build et deploy | réutiliser exactement la variable `IMAGE` |
+| Cloud Build : `COPY failed: … models` | `models/` exclu par le `.gitignore` repris par défaut | créer le `.gcloudignore` de l'étape 3 |
+| `PERMISSION_DENIED` sur Cloud Build | API non activée, ou rôle manquant | relancer `gcloud services enable …` ; être *Owner* du projet |
+| `failed to start and listen on the port` | l'application n'écoute pas le port attendu | `--port 8000` et la commande du Dockerfile avec `${PORT}` |
+| Image introuvable au déploiement | région ou nom de dépôt différents entre build et deploy | réutiliser exactement la variable `IMAGE` |
 
-Solution : publiée après la séance.
+## À retenir
+
+- **Même image, autre nuage** : le travail des séances 1 et 2 se déploie tel quel sur Google Cloud.
+- **Ce que l'outil envoie compte autant que ce qu'il construit** : `.gcloudignore` et `.dockerignore` décident de ce qui entre dans l'image.
+- **Les plateformes se ressemblent** : registre, service, port, échelle à zéro, journaux ; seuls les noms changent.
+
+## Solution
+
+Solution complète : publiée après la séance.

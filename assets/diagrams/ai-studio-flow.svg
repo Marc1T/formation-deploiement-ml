@@ -135,7 +135,7 @@
 <rect class="box" fill="var(--ai)" x="615" y="200" width="160" height="56" rx="12"/>
 <use class="ic" href="#dg-ai-studio-flow-i-cloud" x="629" y="216" width="24" height="24"/>
 <text class="label" x="663" y="226" font-size="14">Gemini API</text>
-<text class="sublabel" x="663" y="241" font-size="11">gemini-2.5-flash</text>
+<text class="sublabel" x="663" y="241" font-size="11">gemini-flash-latest</text>
 </g>
 <text class="note" x="500" y="268" text-anchor="middle" font-size="12">La clé reste côté serveur. Le palier gratuit peut utiliser vos requêtes pour entraîner les modèles : pas de données sensibles.</text>
 </svg>

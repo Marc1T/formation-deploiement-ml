@@ -134,14 +134,17 @@
   <h2>Comment ça marche</h2>
   <div class="pipeline" data-start="1" data-steps='[
     {"label":"Dépôt GitHub","sub":"public","icon":"branch","kind":"code","edge":"clone"},
-    {"label":"requirements.txt","sub":"depuis uv.lock","icon":"file","kind":"code","edge":"pip install"},
+    {"label":"app/requirements.txt","sub":"à côté du fichier principal","icon":"file","kind":"code","edge":"pip install"},
     {"label":"streamlit run","sub":"app/streamlit_app.py","icon":"play","kind":"user","edge":"HTTPS"},
     {"label":"URL publique","sub":"…streamlit.app","icon":"globe","kind":"user","state":"done"}]'></div>
   <div class="cols mt">
-    <pre data-title="terminal"><code class="language-bash" data-trim>uv export --format requirements-txt --no-dev --no-default-groups \
-  --group app --no-hashes --no-emit-project -o requirements.txt</code></pre>
     <div class="stack">
-      <div class="callout fragment"><i data-icon="lock"></i><p>Les <strong>secrets</strong> (<code>API_URL</code>, <code>GEMINI_API_KEY</code>) se saisissent dans l'interface, au format TOML. Jamais dans le dépôt.</p></div>
+      <pre data-title="terminal"><code class="language-bash" data-trim>uv export --format requirements-txt --no-default-groups \
+  --group app --no-hashes --no-emit-project -o app/requirements.txt</code></pre>
+      <div class="callout warn fragment"><i data-icon="warning"></i><p>Streamlit Cloud cherche d'abord <strong>à côté du fichier principal</strong>, puis à la racine, où <code>uv.lock</code> passe avant <code>requirements.txt</code>. Sans <code>app/requirements.txt</code>, il installerait MLflow et DVC.</p></div>
+    </div>
+    <div class="stack">
+      <div class="callout fragment"><i data-icon="lock"></i><p>Les <strong>secrets</strong> (<code>API_URL</code>, <code>GEMINI_API_KEY</code>) se saisissent dans l'interface, au format TOML, et se lisent avec <code>st.secrets</code>.</p></div>
       <div class="callout fragment"><i data-icon="refresh"></i><p>Chaque push sur <code>main</code> redéploie : déploiement continu sans rien configurer.</p></div>
     </div>
   </div>
@@ -153,7 +156,7 @@
   <div class="cols cols-3">
     <div class="card accent fragment" data-kind="infra"><h3><i data-icon="api"></i> 1 · Mode API</h3><p>Secret <code>API_URL</code> vers votre API Azure (Lab 9). L'application ne porte aucun modèle.</p><p class="small">La plus propre.</p></div>
     <div class="card fragment" data-kind="data"><h3><i data-icon="package"></i> 2 · Modèle téléchargé</h3><p>Secret <code>MODEL_URL</code> vers un <code>model.joblib</code> publié (asset d'une release GitHub). On sert exactement l'artefact validé.</p><p class="small">★★</p></div>
-    <div class="card dashed fragment" data-kind="user"><h3><i data-icon="warning"></i> 3 · Repli de démonstration</h3><p>Sans modèle, l'application s'entraîne au démarrage depuis <code>data/raw/diabetes.csv</code>.</p><p class="small">Pour réussir en séance ; à proscrire en vrai projet.</p></div>
+    <div class="card dashed fragment" data-kind="user"><h3><i data-icon="warning"></i> 3 · Repli de démonstration</h3><p>Sans modèle, l'application s'entraîne au démarrage sur les données publiques du jeu Pima, avec un avertissement visible.</p><p class="small">Pour réussir en séance ; à proscrire en vrai projet.</p></div>
   </div>
   <p class="small mt fragment">Le modèle servi doit être un <strong>artefact versionné</strong> : release, remote DVC, registre MLflow ou image Docker. Jamais réentraîné en silence.</p>
 </section>
@@ -163,21 +166,42 @@
   <h2>Déployer l'application sur Streamlit Community Cloud</h2>
   <div class="cols cols-21">
     <ol class="steps">
-      <li><strong>Préparer le dépôt</strong> <code>requirements.txt</code> depuis <code>uv.lock</code>, <code>sys.path</code> vers <code>src/</code></li>
-      <li><strong>Le modèle</strong> mode API plus tard, repli de démonstration pour l'instant</li>
-      <li><strong>Créer l'application</strong> share.streamlit.io → dépôt, branche, <code>app/streamlit_app.py</code></li>
-      <li><strong>Advanced settings</strong> Python 3.11, secrets vides</li>
-      <li><strong>Deploy</strong> puis ouvrir l'URL depuis votre téléphone</li>
+      <li><strong>La configuration</strong> une fonction <code>setting</code> : environnement, sinon <code>st.secrets</code></li>
+      <li><strong>Le modèle</strong> repli de démonstration quand le modèle versionné manque</li>
+      <li><strong>Les dépendances</strong> <code>app/requirements.txt</code> depuis <code>uv.lock</code>, puis push</li>
+      <li><strong>Créer l'application</strong> share.streamlit.io, <code>app/streamlit_app.py</code>, Python 3.11</li>
       <li><strong>Mettre à jour</strong> un push, un redéploiement</li>
     </ol>
     <div class="card accent">
-      <h3><i data-icon="terminal"></i> Démarrage</h3>
-      <pre><code class="language-bash" data-trim>uv export --format requirements-txt --no-dev \
+      <h3><i data-icon="terminal"></i> Démarrage (Git Bash)</h3>
+      <pre><code class="language-bash" data-trim>uv export --format requirements-txt \
   --no-default-groups --group app --no-hashes \
-  --no-emit-project -o requirements.txt
-git add requirements.txt &amp;&amp; git commit -m "Streamlit Cloud" &amp;&amp; git push</code></pre>
-      <p><span class="badge">★ étapes 1 à 6</span> <span class="badge alt">★★ modèle en release</span></p>
+  --no-emit-project -o app/requirements.txt
+git add -A &amp;&amp; git commit -m "Streamlit Cloud" &amp;&amp; git push</code></pre>
+      <p><span class="badge">★ étapes 1 à 5</span> <span class="badge alt">★★ simuler le cloud en local, modèle en release</span></p>
       <p class="small">Guide détaillé : <code>labs/lab-08-streamlit-cloud.md</code></p>
+    </div>
+  </div>
+</section>
+
+<section class="debrief">
+  <p class="eyebrow ok">Lab 8 · À retenir</p>
+  <h2>Ce qu'il faut retenir</h2>
+  <div class="cols cols-21">
+    <ul class="takeaways">
+      <li><i data-icon="check"></i><span><strong>Déployer, c'est rendre explicite ce que votre machine fournissait en silence</strong> : dépendances, modèle, configuration.</span></li>
+      <li><i data-icon="check"></i><span><strong>Un fichier de dépendances à côté du fichier principal</strong>, généré depuis <code>uv.lock</code> : il prime sur la racine.</span></li>
+      <li><i data-icon="check"></i><span><strong>La configuration vient de l'environnement ou des secrets</strong>, jamais du code ; une seule fonction lit les deux.</span></li>
+      <li><i data-icon="check"></i><span><strong>Le repli de démonstration est un filet, pas une méthode</strong> : en vrai, on sert un artefact versionné.</span></li>
+    </ul>
+    <div class="card soft">
+      <h3><i data-icon="terminal"></i> Commandes clés</h3>
+      <pre><code class="language-bash" data-trim>uv export --format requirements-txt \
+  --no-default-groups --group app \
+  --no-hashes --no-emit-project \
+  -o app/requirements.txt
+git push        # redéploie</code></pre>
+      <p class="small"><strong>Réussi si</strong> l'URL publique s'ouvre sur un téléphone et affiche une estimation (61 % avec le modèle de démonstration).</p>
     </div>
   </div>
 </section>
@@ -236,15 +260,15 @@ git add requirements.txt &amp;&amp; git commit -m "Streamlit Cloud" &amp;&amp; g
     <div class="line fragment"><span class="prompt">$ </span><span class="cmd">az group create --name rg-diabetes-ml --location francecentral</span></div>
     <div class="line fragment"><span class="prompt">$ </span><span class="cmd">az containerapp env create --name cae-diabetes-ml --resource-group rg-diabetes-ml --location francecentral</span></div>
     <div class="line fragment"><span class="prompt">$ </span><span class="cmd">az containerapp create --name diabetes-api --resource-group rg-diabetes-ml --environment cae-diabetes-ml \
-    --image ghcr.io/&lt;vous&gt;/&lt;depot&gt;/api:latest --target-port 8000 --ingress external \
+    --image ghcr.io/&lt;vous-en-minuscules&gt;/diabete-lab/api:latest --target-port 8000 --ingress external \
     --min-replicas 0 --max-replicas 1 --cpu 0.5 --memory 1.0Gi \
-    --env-vars MODEL_PATH=/app/models/model.joblib THRESHOLD=0.5</span></div>
+    --env-vars THRESHOLD=0.5</span></div>
     <div class="line fragment"><span class="prompt">$ </span><span class="cmd">az containerapp show -n diabetes-api -g rg-diabetes-ml --query properties.configuration.ingress.fqdn -o tsv</span></div>
     <div class="line fragment"><span class="ok">diabetes-api.kindhill-1a2b3c4d.francecentral.azurecontainerapps.io</span></div>
-    <div class="line fragment"><span class="prompt">$ </span><span class="cmd">curl https://diabetes-api.…azurecontainerapps.io/health</span></div>
-    <div class="line fragment"><span class="ok">{"status":"ok","model_loaded":true,"model_type":"random_forest","model_version":"0.1.0"}</span></div>
+    <div class="line fragment"><span class="prompt">$ </span><span class="cmd">curl https://diabetes-api.…azurecontainerapps.io/predict -d '{…}'</span></div>
+    <div class="line fragment"><span class="ok">{"prediction":1,"probability":0.5838}</span></div>
   </div>
-  <p class="small">Le script <code>deploy/azure/deploy.ps1</code> (ou <code>.sh</code>) enchaîne tout cela et affiche l'URL.</p>
+  <p class="small">Commandes et options vérifiées avec Azure CLI 2.93. Le fil rouge les enchaîne dans <code>deploy/azure/deploy.ps1</code> (ou <code>.sh</code>).</p>
 </section>
 
 <section>
@@ -283,18 +307,41 @@ git add requirements.txt &amp;&amp; git commit -m "Streamlit Cloud" &amp;&amp; g
       <li><strong>Se connecter</strong> <code>az login</code>, extension, fournisseurs</li>
       <li><strong>Groupe de ressources</strong> <code>rg-diabetes-ml</code></li>
       <li><strong>Environnement</strong> <code>cae-diabetes-ml</code></li>
-      <li><strong>Application</strong> <code>az containerapp create</code> avec votre image ghcr.io (publique)</li>
-      <li><strong>Tester</strong> <code>/docs</code>, <code>/health</code>, <code>curl /predict</code>, journaux</li>
-      <li><strong>Brancher Streamlit Cloud</strong> secret <code>API_URL</code> : interface sur Streamlit, API sur Azure</li>
-      <li><strong>Mettre à jour, nettoyer</strong> <code>az containerapp update</code>, <code>az group delete</code> (plus tard)</li>
+      <li><strong>Application</strong> <code>az containerapp create</code> avec votre image publique, en minuscules</li>
+      <li><strong>Tester</strong> <code>/health</code>, <code>/predict</code> → <code>0.5838</code>, journaux</li>
+      <li><strong>Brancher Streamlit Cloud</strong> secret <code>API_URL</code> → <code>58%</code> en mode API</li>
+      <li><strong>Mettre à jour, nettoyer</strong> tag SHA, révisions, <code>az group delete</code> (plus tard)</li>
     </ol>
     <div class="card accent">
-      <h3><i data-icon="terminal"></i> Démarrage</h3>
-      <pre><code class="language-bash" data-trim>az login
+      <h3><i data-icon="terminal"></i> Démarrage (Git Bash)</h3>
+      <pre><code class="language-bash" data-trim>IMAGE=ghcr.io/&lt;compte&gt;/diabete-lab/api:latest
+az login
 az extension add --name containerapp --upgrade
 az group create --name rg-diabetes-ml --location francecentral</code></pre>
       <p><span class="badge">★ étapes 1 à 7</span> <span class="badge alt">★★ ACR, image privée, déploiement continu, remote DVC</span></p>
       <p class="small">Guide détaillé : <code>labs/lab-09-azure-container-apps.md</code></p>
+    </div>
+  </div>
+</section>
+
+<section class="debrief">
+  <p class="eyebrow ok">Lab 9 · À retenir</p>
+  <h2>Ce qu'il faut retenir</h2>
+  <div class="cols cols-21">
+    <ul class="takeaways">
+      <li><i data-icon="check"></i><span><strong>Trois objets suffisent</strong> : un groupe de ressources, un environnement, une application, et votre image tourne en HTTPS.</span></li>
+      <li><i data-icon="check"></i><span><strong>On déploie une image, on la configure par des variables</strong> : jamais une image différente par environnement.</span></li>
+      <li><i data-icon="check"></i><span><strong>Un tag immuable par déploiement</strong> (SHA) et des révisions : on sait ce qui tourne, on peut revenir en arrière.</span></li>
+      <li><i data-icon="check"></i><span><strong>Ce qui est créé se paie</strong> : <code>min-replicas 0</code> en démonstration, <code>az group delete</code> en fin de projet.</span></li>
+    </ul>
+    <div class="card soft">
+      <h3><i data-icon="terminal"></i> Commandes clés</h3>
+      <pre><code class="language-bash" data-trim>az containerapp create … --image "$IMAGE" \
+  --target-port 8000 --ingress external
+az containerapp logs show -n diabetes-api \
+  -g rg-diabetes-ml --tail 30
+az group delete --name rg-diabetes-ml --yes</code></pre>
+      <p class="small"><strong>Réussi si</strong> l'application Streamlit Cloud affiche <code>58%</code> en « Mode API » : interface chez Streamlit, API chez Microsoft.</p>
     </div>
   </div>
 </section>
@@ -356,17 +403,40 @@ gcloud run deploy diabetes-api --image $IMAGE --region europe-west1 --allow-unau
     <ol class="steps">
       <li><strong>Installer et se connecter</strong> <code>gcloud auth login</code>, projet, activer les API</li>
       <li><strong>Un dépôt d'images</strong> Artifact Registry</li>
+      <li><strong>Quoi envoyer, quoi construire</strong> <code>.gcloudignore</code> (sinon pas de modèle) et <code>cloudbuild.yaml</code></li>
       <li><strong>Construire dans le cloud</strong> <code>gcloud builds submit</code></li>
-      <li><strong>Déployer</strong> <code>gcloud run deploy</code>, ouvrir <code>/docs</code></li>
+      <li><strong>Déployer</strong> <code>gcloud run deploy</code>, <code>/predict</code> → <code>0.5838</code></li>
       <li><strong>Comparer</strong> avec Azure, puis nettoyer</li>
     </ol>
     <div class="card accent">
-      <h3><i data-icon="terminal"></i> Démarrage</h3>
+      <h3><i data-icon="terminal"></i> Démarrage (Git Bash)</h3>
       <pre><code class="language-bash" data-trim>gcloud auth login
 gcloud config set project &lt;PROJECT_ID&gt;
-bash deploy/gcp/deploy.sh &lt;PROJECT_ID&gt; europe-west1</code></pre>
+gcloud services enable run.googleapis.com \
+  artifactregistry.googleapis.com cloudbuild.googleapis.com</code></pre>
       <p><span class="badge neutral">projet avec facturation requis</span> <span class="badge alt">★★ Vertex AI, service authentifié</span></p>
       <p class="small">Sans projet : suivez la démonstration. Guide : <code>labs/lab-10-cloud-run-optionnel.md</code></p>
+    </div>
+  </div>
+</section>
+
+<section class="debrief">
+  <p class="eyebrow ok">Lab 10 · À retenir</p>
+  <h2>Ce qu'il faut retenir</h2>
+  <div class="cols cols-21">
+    <ul class="takeaways">
+      <li><i data-icon="check"></i><span><strong>Même image, autre nuage</strong> : le travail des séances 1 et 2 se déploie tel quel sur Google Cloud.</span></li>
+      <li><i data-icon="check"></i><span><strong>Ce que l'outil envoie compte autant que ce qu'il construit</strong> : <code>.gcloudignore</code> et <code>.dockerignore</code> décident du contenu de l'image.</span></li>
+      <li><i data-icon="check"></i><span><strong>Les plateformes se ressemblent</strong> : registre, service, port, échelle à zéro, journaux ; seuls les noms changent.</span></li>
+    </ul>
+    <div class="card soft">
+      <h3><i data-icon="terminal"></i> Commandes clés</h3>
+      <pre><code class="language-bash" data-trim>gcloud builds submit . --config cloudbuild.yaml \
+  --substitutions "_IMAGE=$IMAGE"
+gcloud run deploy diabetes-api --image "$IMAGE" \
+  --region europe-west1 --allow-unauthenticated \
+  --port 8000 --min-instances 0</code></pre>
+      <p class="small"><strong>Réussi si</strong> <code>$URL/predict</code> renvoie <code>0.5838</code>, comme sur Azure.</p>
     </div>
   </div>
 </section>
@@ -394,29 +464,30 @@ bash deploy/gcp/deploy.sh &lt;PROJECT_ID&gt; europe-west1</code></pre>
   <p class="eyebrow">Google AI Studio · projet fil rouge</p>
   <h2>Le code</h2>
   <div class="cols cols-21">
-    <pre data-title="app/streamlit_app.py (extrait)"><code class="language-python" data-trim data-line-numbers="1-3|5-11|13-14|16-21">import os
-from google import genai
-GEMINI_API_KEY = os.getenv("GEMINI_API_KEY", "")
+    <pre data-title="app/streamlit_app.py (extrait)"><code class="language-python" data-trim data-line-numbers="1-2|4-11|13-19">GEMINI_API_KEY = setting("GEMINI_API_KEY")            # .env, ou secrets Streamlit
+GEMINI_MODEL = setting("GEMINI_MODEL", "gemini-flash-latest")
 
-def explain_with_gemini(features, result):
+def explain_with_gemini(values, result):
+    from google import genai
     client = genai.Client(api_key=GEMINI_API_KEY)
     prompt = ("Tu es un assistant pédagogique … "
-              f"risque estimé {result['probability']:.0%} pour : {features} … "
+              f"risque estimé {result['probability']:.0%} pour : {values} … "
               "En quatre phrases, en français. Rappelle qu'il s'agit "
               "d'un exercice pédagogique et non d'un avis médical.")
-    return client.models.generate_content(model="gemini-2.5-flash", contents=prompt).text
+    return client.models.generate_content(model=GEMINI_MODEL, contents=prompt).text
 
-if GEMINI_API_KEY and st.button("Expliquer cette estimation"):
-    with st.spinner("Gemini rédige…"):
-        try:
-            st.write(explain_with_gemini(features, result))
-        except Exception as exc:
-            st.error(f"Appel Gemini impossible : {exc}")
-# sans clé : pas de bouton, l'application reste utilisable</code></pre>
+if "result" in st.session_state:                      # le bloc qui affiche le résultat
+    …
+    if GEMINI_API_KEY and st.button("Expliquer cette estimation"):
+        with st.spinner("Gemini rédige…"):
+            try:
+                st.write(explain_with_gemini(st.session_state["values"], result))
+            except Exception as exc:
+                st.error(f"Appel Gemini impossible : {exc}")</code></pre>
     <div class="stack">
-      <div class="callout fragment"><i data-icon="shield"></i><p>Le prompt <strong>rappelle le cadre</strong> : exercice, pas d'avis médical. L'interface aussi.</p></div>
-      <div class="callout warn fragment"><i data-icon="warning"></i><p>Le <code>try/except</code> absorbe le <code>429</code> du palier gratuit et les pannes : un message, pas une page blanche.</p></div>
-      <div class="callout fragment"><i data-icon="key"></i><p>La clé vient de <code>os.environ</code>. Le code ne sait pas d'où : <code>.env</code>, secrets Streamlit, secret Container Apps.</p></div>
+      <div class="callout warn fragment"><i data-icon="refresh"></i><p>Le second bouton va <strong>dans le bloc du résultat gardé en <code>session_state</code></strong> : placé sous « Estimer », il n'aurait jamais d'effet.</p></div>
+      <div class="callout fragment"><i data-icon="shield"></i><p>Le <code>try/except</code> transforme clé invalide (<code>400</code>), quota (<code>429</code>) et panne en un message, pas une page blanche. Sans clé, pas de bouton.</p></div>
+      <div class="callout fragment"><i data-icon="package"></i><p><code>google-genai</code> doit figurer dans <code>app/requirements.txt</code> : regénérez-le avant de pousser.</p></div>
     </div>
   </div>
 </section>
@@ -435,20 +506,43 @@ if GEMINI_API_KEY and st.button("Expliquer cette estimation"):
   <h2>Gemini dans l'application</h2>
   <div class="cols cols-21">
     <ol class="steps">
-      <li><strong>Prototyper dans AI Studio</strong> le prompt d'explication, le modèle utilisé</li>
+      <li><strong>Prototyper dans AI Studio</strong> le prompt d'explication, le nom du modèle</li>
       <li><strong>Créer une clé</strong> <em>Get API key</em></li>
-      <li><strong>La ranger dans un secret</strong> <code>.env</code> en local, Secrets sur Streamlit Cloud</li>
-      <li><strong>L'appeler depuis l'application</strong> <code>google-genai</code>, bouton, <code>try/except</code></li>
-      <li><strong>Tester les limites</strong> dix clics rapides : <code>429</code> géré proprement</li>
-      <li><strong>Vérifier Git</strong> <code>git grep AIza</code> ne trouve rien</li>
+      <li><strong>La ranger dans un secret</strong> <code>.env</code> en local</li>
+      <li><strong>L'appeler depuis l'application</strong> <code>google-genai</code>, bouton dans le bloc du résultat</li>
+      <li><strong>Tester les erreurs</strong> clé fausse → message <code>400 … API key not valid</code>, pas de plantage</li>
+      <li><strong>Déployer</strong> <code>app/requirements.txt</code> regénéré, <code>git grep AIza</code> vide, secrets Streamlit Cloud</li>
     </ol>
     <div class="card accent">
-      <h3><i data-icon="terminal"></i> Démarrage</h3>
+      <h3><i data-icon="terminal"></i> Démarrage (Git Bash)</h3>
       <pre><code class="language-bash" data-trim>uv add --group app google-genai
 echo "GEMINI_API_KEY=AIza..." &gt;&gt; .env
+echo "GEMINI_MODEL=gemini-flash-latest" &gt;&gt; .env
 uv run streamlit run app/streamlit_app.py</code></pre>
       <p><span class="badge">★ étapes 1 à 6</span> <span class="badge alt">★★ appel côté API, JSON structuré, cache</span></p>
       <p class="small">Guide détaillé : <code>labs/lab-11-gemini-ai-studio.md</code></p>
+    </div>
+  </div>
+</section>
+
+<section class="debrief">
+  <p class="eyebrow ok">Lab 11 · À retenir</p>
+  <h2>Ce qu'il faut retenir</h2>
+  <div class="cols cols-21">
+    <ul class="takeaways">
+      <li><i data-icon="check"></i><span><strong>Prototyper dans AI Studio, appeler par le SDK</strong> : le prompt se met au point dans l'interface, puis se copie dans le code.</span></li>
+      <li><i data-icon="check"></i><span><strong>La clé est un secret</strong> : <code>.env</code> en local, <em>Secrets</em> sur la plateforme, jamais dans le dépôt ; une clé commitée se révoque.</span></li>
+      <li><i data-icon="check"></i><span><strong>Tout appel à un service externe peut échouer</strong> : clé, quota, panne ; l'application le dit et continue.</span></li>
+      <li><i data-icon="check"></i><span><strong>Pas de données personnelles sur l'offre gratuite</strong> : Google peut s'en servir pour améliorer ses modèles.</span></li>
+    </ul>
+    <div class="card soft">
+      <h3><i data-icon="terminal"></i> Commandes clés</h3>
+      <pre><code class="language-bash" data-trim>uv add --group app google-genai
+uv export --format requirements-txt \
+  --no-default-groups --group app \
+  --no-hashes --no-emit-project -o app/requirements.txt
+git grep -n "AIza" || echo "aucune clé"</code></pre>
+      <p class="small"><strong>Réussi si</strong> l'application en ligne explique l'estimation en quatre phrases, et que <code>git grep</code> ne trouve aucune clé.</p>
     </div>
   </div>
 </section>
@@ -513,6 +607,23 @@ uv run streamlit run app/streamlit_app.py</code></pre>
       <tr><td><span class="badge">Séance 3</span></td><td>le mettre en ligne : Streamlit Cloud, Container Apps, Cloud Run ; situer Azure ML, Vertex AI, AI Studio ; Gemini sans exposer de clé</td></tr>
     </tbody>
   </table>
+</section>
+
+<section class="quiz">
+  <p class="eyebrow">Auto-évaluation</p>
+  <h2>Neuf questions pour vérifier</h2>
+  <ol class="quiz-list">
+    <li>IaaS, PaaS, serverless : où ranger Container Apps et Cloud Run ?</li>
+    <li>Pourquoi Streamlit Cloud installerait-il MLflow sans <code>app/requirements.txt</code> ?</li>
+    <li><code>os.getenv("API_URL")</code> ignore le secret saisi sur Streamlit Cloud. Pourquoi ?</li>
+    <li><code>--min-replicas 0</code> : quel gain, quel prix ?</li>
+    <li>Pourquoi déployer un tag SHA plutôt que <code>latest</code> ?</li>
+    <li>Pourquoi ne pas passer <code>MODEL_PATH=/app/…</code> à <code>az containerapp create</code> ? Deux raisons.</li>
+    <li>Sans <code>.gcloudignore</code>, que contient l'image construite par Cloud Build ?</li>
+    <li>Où ranger la clé Gemini en local, sur Streamlit Cloud, sur Azure ? Et si elle a été commitée ?</li>
+    <li>AI Studio ou Vertex AI Studio pour des données de patients réelles ?</li>
+  </ol>
+  <p class="small mt">Mémo des commandes : <code>seance-3-cloud/memo.md</code> · Réponses publiées avec les solutions des labs.</p>
 </section>
 
 <section class="title-slide">

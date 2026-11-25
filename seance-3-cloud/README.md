@@ -1,6 +1,8 @@
 # Séance 3 · Mise en production dans le cloud
 
-**Durée** : 3 h · **Slides** : [slides.html](slides.html) · **Labs** : [8 Streamlit Cloud](labs/lab-08-streamlit-cloud.md) · [9 Azure Container Apps](labs/lab-09-azure-container-apps.md) · [10 Cloud Run (optionnel)](labs/lab-10-cloud-run-optionnel.md) · [11 Gemini](labs/lab-11-gemini-ai-studio.md)
+**Durée** : 3 h · **Slides** : [slides.html](slides.html) · **Labs** : [8 Streamlit Cloud](labs/lab-08-streamlit-cloud.md) · [9 Azure Container Apps](labs/lab-09-azure-container-apps.md) · [10 Cloud Run (optionnel)](labs/lab-10-cloud-run-optionnel.md) · [11 Gemini](labs/lab-11-gemini-ai-studio.md) · **Mémo** : [toutes les commandes de la séance](memo.md)
+
+**Terminal** : Git Bash sous Windows, Terminal sous macOS et Linux. **Point de départ** : le projet `diabete-lab` poussé sur GitHub, avec sa CI verte et son image publique (séance 2).
 
 À la fin de la séance, chaque étudiant a une application publique en ligne, une API conteneurisée déployée sur Azure, une vue d'ensemble de ce que proposent Azure ML et Vertex AI, et une brique d'IA générative branchée proprement dans son application.
 
@@ -70,19 +72,25 @@ Ce qu'il faut en retenir :
 
 ## 3. Streamlit Community Cloud : le déploiement garanti
 
-Gratuit, sans carte bancaire, connecté à GitHub : Streamlit clone votre dépôt, installe `requirements.txt`, lance `streamlit run` et vous donne une URL `https://<nom>.streamlit.app`. Les secrets (clé Gemini, URL de l'API) se saisissent dans l'interface.
+Gratuit, sans carte bancaire, connecté à GitHub : Streamlit clone votre dépôt, installe les dépendances, lance `streamlit run` et vous donne une URL `https://<nom>.streamlit.app`. Le guide complet est dans le fil rouge : [deploy/streamlit-cloud.md](../projet-fil-rouge/deploy/streamlit-cloud.md).
 
-Le guide complet est dans le fil rouge : [deploy/streamlit-cloud.md](../projet-fil-rouge/deploy/streamlit-cloud.md). Le point délicat est le **modèle** : il n'est pas dans Git (DVC le gère). Trois options, de la plus propre à la plus pratique :
+Déployer, c'est rendre explicite tout ce que votre machine fournissait en silence. Trois choses sont à régler.
+
+**Les dépendances.** Streamlit Cloud cherche un fichier de dépendances d'abord dans le dossier du fichier principal, puis à la racine du dépôt ; dans un même dossier, `uv.lock` passe avant `requirements.txt` ([documentation](https://docs.streamlit.io/deploy/streamlit-community-cloud/deploy-your-app/app-dependencies)). À la racine de votre projet, il prendrait donc `uv.lock` et installerait tous les groupes, MLflow et DVC compris. On génère un `app/requirements.txt`, à côté de `app/streamlit_app.py`, réduit au groupe `app` :
+
+```bash
+uv export --format requirements-txt --no-default-groups --group app --no-hashes --no-emit-project -o app/requirements.txt
+```
+
+À regénérer après chaque `uv add --group app …` ; choisissez Python 3.11 dans *Advanced settings* (3.12 par défaut).
+
+**La configuration.** Pas de `.env` sur Streamlit Cloud : les réglages arrivent par ses *Secrets* et se lisent avec `st.secrets`. Une petite fonction `setting(nom)` lit la variable d'environnement si elle existe, sinon le secret, sinon une valeur par défaut : le même code marche partout.
+
+**Le modèle.** Il n'est pas dans Git (DVC le gère, dans un remote local). Trois options, de la plus propre à la plus pratique :
 
 1. **Mode API** : secret `API_URL` vers votre API Azure (Lab 9). L'application ne porte aucun modèle.
 2. **Modèle téléchargé** : secret `MODEL_URL` vers un fichier `model.joblib` publié (asset d'une *release* GitHub, blob public). On sert exactement l'artefact validé.
-3. **Repli de démonstration** : sans modèle, l'application du fil rouge s'entraîne au démarrage depuis `data/raw/diabetes.csv`. Pratique pour réussir le déploiement en séance, à proscrire en vrai projet.
-
-`requirements.txt` est généré depuis `uv.lock` pour rester cohérent avec votre environnement :
-
-```bash
-uv export --format requirements-txt --no-dev --no-default-groups --group app --no-hashes --no-emit-project -o requirements.txt
-```
+3. **Repli de démonstration** : sans modèle, l'application s'entraîne au démarrage sur les données publiques du jeu Pima, avec un avertissement visible. Pratique pour réussir le déploiement en séance, à proscrire en vrai projet.
 
 ## 4. Azure : Container Apps et Azure ML
 
@@ -111,12 +119,14 @@ az group create --name rg-diabetes-ml --location francecentral
 az containerapp env create --name cae-diabetes-ml --resource-group rg-diabetes-ml --location francecentral
 az containerapp create \
   --name diabetes-api --resource-group rg-diabetes-ml --environment cae-diabetes-ml \
-  --image ghcr.io/<vous>/<depot>/api:latest \
+  --image ghcr.io/<vous-en-minuscules>/<depot>/api:latest \
   --target-port 8000 --ingress external \
   --min-replicas 0 --max-replicas 1 --cpu 0.5 --memory 1.0Gi \
-  --env-vars MODEL_PATH=/app/models/model.joblib THRESHOLD=0.5
+  --env-vars THRESHOLD=0.5
 az containerapp show --name diabetes-api --resource-group rg-diabetes-ml --query properties.configuration.ingress.fqdn -o tsv
 ```
+
+Toutes ces commandes et leurs options ont été vérifiées avec Azure CLI 2.93 et l'extension `containerapp` (novembre 2026). Le chemin du modèle n'est pas passé : `MODEL_PATH` est défini dans l'image. C'est aussi une précaution sous Git Bash, qui convertit en chemin Windows toute valeur d'argument commençant par `/` (`MSYS_NO_PATHCONV=1` désactive cette conversion).
 
 Puis `https://<fqdn>/docs`. Mise à jour après un nouveau push : `az containerapp update --image …:<nouveau tag>`, ou le workflow [deploy-azure.yml](../projet-fil-rouge/.github/workflows/deploy-azure.yml) (★★).
 
@@ -146,6 +156,8 @@ gcloud run deploy diabetes-api --image $IMAGE --region europe-west1 --allow-unau
 
 Cloud Run impose le port par la variable `PORT` : c'est pour cela que le Dockerfile lance `uvicorn … --port ${PORT}`.
 
+Un piège : sans fichier `.gcloudignore`, `gcloud builds submit` reprend le `.gitignore`, qui exclut `models/`. L'image serait construite sans modèle. Le fil rouge et le lab 10 fournissent un `.gcloudignore` calqué sur `.dockerignore`.
+
 Les crédits Google Cloud pour étudiants passent par l'enseignant (programme *Google Cloud for Education*, *Teaching credits*) ; l'essai gratuit individuel demande une carte bancaire. Le Lab 10 est donc optionnel : ceux qui ont un projet avec facturation le font, les autres suivent la démonstration.
 
 ### Tour de Vertex AI (démonstration)
@@ -167,9 +179,13 @@ Dans la console : *Workbench* (notebooks managés), *Training* (un job qui exéc
 from google import genai
 
 client = genai.Client(api_key=os.environ["GEMINI_API_KEY"])
-response = client.models.generate_content(model="gemini-2.5-flash", contents=prompt)
+response = client.models.generate_content(model="gemini-flash-latest", contents=prompt)
 print(response.text)
 ```
+
+`gemini-flash-latest` désigne toujours le modèle Flash le plus récent ; les noms de version changent souvent, copiez celui qu'affiche AI Studio si vous préférez figer une version.
+
+Dans Streamlit, le bouton « Expliquer » doit être placé dans le bloc qui affiche le résultat gardé dans `st.session_state`, pas sous le bouton « Estimer » : un clic réexécute le script, et le premier bouton repasse à `False`. Et la bibliothèque `google-genai` doit figurer dans `app/requirements.txt`, sinon l'application déployée échoue à l'import.
 
 Le fil rouge ajoute un bouton « Expliquer cette estimation » : le prompt contient les mesures du patient et la probabilité, Gemini rédige quatre phrases d'explication pédagogique. Deux garde-fous : le prompt rappelle qu'il s'agit d'un exercice, pas d'un avis médical ; et sur le palier gratuit, **Google peut utiliser vos requêtes pour améliorer ses modèles**, donc aucune donnée personnelle n'y transite.
 
@@ -190,6 +206,20 @@ Le code lit `os.environ["GEMINI_API_KEY"]`. Ce qui change d'une plateforme à l'
 ![La boucle MLOps](../assets/diagrams/boucle-mlops.svg)
 
 La [checklist de mise en production](../ressources/checklist-mise-en-production.md) résume les huit vérifications en une page.
+
+## Auto-évaluation
+
+Répondez sans regarder le cours ; les réponses sont publiées avec les solutions des labs.
+
+1. Quelle différence entre IaaS, PaaS et serverless, et dans quelle catégorie tombent Azure Container Apps et Cloud Run ?
+2. Pourquoi Streamlit Cloud installerait-il MLflow et DVC si l'on ne crée pas `app/requirements.txt` ?
+3. Votre application lit `API_URL` avec `os.getenv` ; elle marche en local mais ignore le secret saisi sur Streamlit Cloud. Pourquoi, et que faire ?
+4. Pourquoi déploie-t-on l'image avec `--min-replicas 0`, et quel en est le prix ?
+5. Pourquoi déployer un tag SHA plutôt que `latest` ?
+6. Le lab 9 ne passe pas `MODEL_PATH=/app/models/model.joblib` à `az containerapp create`. Donnez deux raisons.
+7. Sans `.gcloudignore`, l'image construite par Cloud Build démarre mais `/health` répond `degraded`. Pourquoi ?
+8. Où ranger la clé Gemini en local, sur Streamlit Cloud, sur Azure ? Que faire si elle a été commitée ?
+9. Quelle différence entre Google AI Studio et Vertex AI Studio pour un projet qui manipule des données de patients réelles ?
 
 ## Récapitulatif de la formation
 

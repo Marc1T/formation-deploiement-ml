@@ -1,6 +1,8 @@
 # Séance 2 · Du modèle à une application web
 
-**Durée** : 3 h · **Slides** : [slides.html](slides.html) · **Labs** : [4 FastAPI](labs/lab-04-fastapi.md) · [5 Streamlit](labs/lab-05-streamlit.md) · [6 Docker](labs/lab-06-docker.md) · [7 CI](labs/lab-07-ci.md)
+**Durée** : 3 h · **Slides** : [slides.html](slides.html) · **Labs** : [4 FastAPI](labs/lab-04-fastapi.md) · [5 Streamlit](labs/lab-05-streamlit.md) · [6 Docker](labs/lab-06-docker.md) · [7 CI](labs/lab-07-ci.md) · **Mémo** : [toutes les commandes de la séance](memo.md)
+
+**Terminal** : Git Bash sous Windows, Terminal sous macOS et Linux. **Point de départ** : le projet `diabete-lab` construit pendant la séance 1.
 
 À la fin de la séance, votre modèle répond à des requêtes HTTP, une interface web l'interroge, le tout tourne dans des conteneurs, et chaque `git push` lance automatiquement les tests et construit l'image.
 
@@ -97,6 +99,18 @@ class PatientFeatures(BaseModel):
 
 Les bornes ne remplacent pas la validation métier, mais elles arrêtent les valeurs absurdes (un âge négatif, une glycémie de 5 000) avant qu'elles n'atteignent le modèle.
 
+### Préparer les données comme à l'entraînement
+
+Le piège le plus courant d'un modèle en production ne fait aucune erreur visible : les données arrivent préparées **autrement** qu'à l'entraînement. Dans le jeu Pima, un 0 dans l'insuline signifie « mesure manquante », et `prepare.py` le remplace par une valeur manquante que le pipeline impute. Si l'API transmet le 0 tel quel, le modèle croit à une vraie insuline nulle. Mesuré sur le modèle des labs, pour le patient d'exemple :
+
+| Insuline | Préparation | Probabilité estimée |
+|---|---|---|
+| 120 | — | 0,58 |
+| 0 (inconnue) | même nettoyage qu'à l'entraînement | 0,61 |
+| 0 (inconnue) | aucun nettoyage | **0,35** |
+
+Aucune exception, aucun journal d'erreur : juste une estimation fausse. D'où une règle : le code de préparation est **partagé** entre l'entraînement et la prédiction (`predict.py` importe la liste des colonnes à nettoyer depuis `prepare.py`), et le modèle lui-même porte ce qu'il peut. Un pipeline scikit-learn entraîné sur un DataFrame retient par exemple ses colonnes et leur ordre dans `feature_names_in_`.
+
 ### Lancer et tester
 
 ```bash
@@ -130,28 +144,49 @@ Streamlit transforme un script Python en page web : chaque widget (`st.slider`, 
 Extrait de [app/streamlit_app.py](../projet-fil-rouge/app/streamlit_app.py) :
 
 ```python
-import httpx, streamlit as st
+API_URL = os.getenv("API_URL", "").rstrip("/")
 
-API_URL = os.getenv("API_URL", "")
+values = {"glucose": st.slider("Glycémie à 2 h (mg/dL)", 40, 250, 138), ...}
 
-features = {key: st.slider(label, lo, hi) for key, (label, lo, hi) in SLIDERS.items()}
+@st.cache_resource                       # le modèle n'est chargé qu'une fois
+def load_predictor() -> Predictor:
+    return Predictor(MODEL_PATH)
 
 if st.button("Estimer le risque", type="primary"):
-    if API_URL:                                             # mode API
-        result = httpx.post(f"{API_URL}/predict", json=features, timeout=20).json()
-    else:                                                   # mode local
-        result = load_predictor(MODEL_PATH).predict_one(features)
-    st.metric("Probabilité estimée", f"{result['probability']:.0%}")
+    try:
+        if API_URL:                                              # mode API
+            r = httpx.post(f"{API_URL}/predict", json=values, timeout=20)
+            r.raise_for_status()
+            st.session_state["result"] = r.json()
+        else:                                                    # mode local
+            st.session_state["result"] = load_predictor().predict_one(values)
+    except Exception as exc:
+        st.error(f"La prédiction a échoué : {exc}")
+
+if "result" in st.session_state:                                 # survit aux réexécutions
+    st.metric("Probabilité estimée", f"{st.session_state['result']['probability']:.0%}")
 ```
 
-Deux points d'attention :
+Trois points d'attention :
 
-- **`st.cache_resource`** sur le chargement du modèle : sinon il est rechargé à chaque clic.
-- **Le mode est choisi par une variable d'environnement** (`API_URL`). La même application se déploie seule sur Streamlit Community Cloud (mode local) ou derrière une API sur Azure (mode API).
+- **Le script se réexécute à chaque interaction.** Ce qui coûte va dans `@st.cache_resource` ; ce qui doit survivre d'une exécution à l'autre (le résultat) va dans `st.session_state`. Un second bouton placé sous le premier ne fonctionnerait jamais : au clic, le premier repasse à `False`.
+- **Le mode est choisi par une variable d'environnement** (`API_URL`, lue dans un fichier `.env` en local). La même application se déploie seule sur Streamlit Community Cloud (mode local) ou devant une API sur Azure (mode API).
+- **Tout appel réseau peut échouer** : `try/except`, délai d'attente, message lisible.
 
 ```bash
-uv run streamlit run app/streamlit_app.py                       # mode local
-API_URL=http://localhost:8000 uv run streamlit run app/streamlit_app.py   # mode API (PowerShell : $env:API_URL="…")
+uv run streamlit run app/streamlit_app.py                                  # mode local
+API_URL=http://localhost:8000 uv run streamlit run app/streamlit_app.py    # mode API
+```
+
+Une interface Streamlit se teste sans navigateur, avec `streamlit.testing.v1.AppTest` : on charge le script, on clique sur un bouton, on lit les valeurs affichées.
+
+```python
+from streamlit.testing.v1 import AppTest
+
+def test_estimation_locale():                          # dans tests/test_app.py
+    at = AppTest.from_file("../app/streamlit_app.py").run()   # chemin relatif au fichier de test
+    at.button[0].click().run()
+    assert at.metric[0].value == "58%"
 ```
 
 ## 4. Docker : emballer pour que ça tourne partout
@@ -211,7 +246,9 @@ docker exec -it <id> sh                                    # un shell dedans
 docker image ls                                            # les images et leur taille
 ```
 
-Le fichier `.dockerignore` exclut `.venv`, `.git`, `mlruns`, les tests : le contexte envoyé à Docker reste petit.
+Le fichier `.dockerignore` exclut `.venv`, `.git`, `mlruns`, les données et les tests : le contexte envoyé à Docker reste petit. L'image de l'API pèse environ 700 Mo, dont l'essentiel pour numpy, scipy, pandas et scikit-learn ; `docker history` montre le poids de chaque couche.
+
+Sous Windows, lancez ces commandes dans Git Bash. Pour un shell interactif dans un conteneur, Git Bash demande parfois `winpty docker exec -it <id> sh` ; pour une commande ponctuelle, préférez `docker exec <id> whoami` (sans `-it`).
 
 ### Docker Compose : plusieurs services ensemble
 
@@ -266,16 +303,23 @@ jobs:
       - run: uv sync --frozen && uv run dvc repro
       - uses: docker/login-action@v3
         with: { registry: ghcr.io, username: ${{ github.actor }}, password: ${{ secrets.GITHUB_TOKEN }} }
+      - id: meta
+        uses: docker/metadata-action@v5          # nom en minuscules, tags latest et SHA
+        with: { images: "ghcr.io/${{ github.repository }}/api", tags: "type=raw,value=latest\ntype=sha,prefix=" }
       - uses: docker/build-push-action@v6
-        with: { context: ., file: docker/api.Dockerfile, push: true, tags: ghcr.io/${{ github.repository }}/api:latest }
+        with: { context: ., file: docker/api.Dockerfile, push: true, tags: "${{ steps.meta.outputs.tags }}" }
 ```
 
 Ce qu'il faut voir :
 
 - **`uv sync --frozen`** : la CI installe exactement `uv.lock` ; si le lock n'est pas à jour, elle échoue au lieu de résoudre autre chose.
 - **`needs: qualite`** : pas d'image si les tests échouent.
-- **`dvc repro` dans la CI** : le modèle est réentraîné à partir du pipeline, donc l'image contient toujours un modèle cohérent avec le code. Avec un remote DVC, on ferait `dvc pull` à la place.
+- **`dvc repro` dans la CI** : le modèle est réentraîné à partir du pipeline, donc l'image contient toujours un modèle cohérent avec le code.
+- **La CI n'a accès qu'au dépôt.** Le fil rouge garde ses données brutes dans Git (elles sont petites). Dans votre projet, elles sont dans un remote DVC sur **votre** disque : la CI du lab 7 télécharge donc les données publiques du jeu Pima avant `dvc repro`, et DVC vérifie qu'elles ont la même empreinte. Avec un remote cloud (séance 3), un `dvc pull` remplace ce téléchargement.
+- **Le nom d'une image Docker doit être en minuscules.** `docker/metadata-action` convertit `${{ github.repository }}` (`Marc1T/…` devient `marc1t/…`) et ajoute un tag immuable : le SHA du commit.
 - **`ghcr.io`** : GitHub Container Registry, gratuit, authentifié par le jeton automatique du workflow. L'image publiée s'appelle `ghcr.io/<vous>/<depot>/api:latest` ; c'est elle que la séance 3 déploiera.
+
+Avant le premier push, mettez le code au propre (`uv run ruff format .` puis `uv run ruff check --fix .`) : sinon le premier run échoue sur le style, pas sur le fond.
 
 ### Où trouver les résultats
 
@@ -288,7 +332,20 @@ Onglet **Actions** du dépôt : chaque exécution, chaque étape, les journaux. 
 - Docker emballe tout ; deux étapes pour une image petite et propre ; Compose pour lancer l'ensemble.
 - GitHub Actions rejoue lint, tests, entraînement et construction à chaque push, et publie l'image.
 
-**Devoir pour la séance 3** : pousser votre projet sur GitHub avec le workflow CI et obtenir un run vert. Vérifiez que l'image apparaît dans l'onglet Packages. Si vous n'avez pas encore de compte Azure for Students, c'est le moment : la vérification peut prendre plusieurs jours.
+**Devoir pour la séance 3** : pousser votre projet sur GitHub avec le workflow CI et obtenir un run vert. Vérifiez que l'image apparaît dans l'onglet Packages et rendez-la publique. Si vous n'avez pas encore de compte Azure for Students, c'est le moment : la vérification peut prendre plusieurs jours. Installez aussi [Azure CLI](https://learn.microsoft.com/cli/azure/install-azure-cli).
+
+## 7. Auto-évaluation
+
+Répondez sans regarder le cours ; les réponses sont publiées avec les solutions des labs.
+
+1. Pourquoi charge-t-on le modèle dans `lifespan` plutôt que dans la fonction `predict` ?
+2. Une requête envoie `"age": -3`. Quel code de statut l'API renvoie-t-elle, et quelle ligne de code l'a produit ?
+3. Pourquoi l'API répond-elle `503` plutôt que `500` quand le modèle est absent ?
+4. L'API reçoit une insuline à 0 et la transmet telle quelle au modèle. Qu'arrive-t-il, et comment l'éviter ?
+5. Dans Streamlit, pourquoi range-t-on le résultat dans `st.session_state` ?
+6. Pourquoi copie-t-on `pyproject.toml` et `uv.lock` **avant** le code dans le Dockerfile ?
+7. Dans Docker Compose, l'interface appelle `http://api:8000`, mais votre navigateur `http://localhost:8000`. Pourquoi deux adresses ?
+8. La CI de votre projet ne peut pas faire `dvc pull`. Pourquoi, et comment le lab 7 contourne-t-il le problème ?
 
 ## Pour aller plus loin (★★)
 

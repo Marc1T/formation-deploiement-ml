@@ -1,6 +1,8 @@
 # Séance 1 · Du notebook au projet reproductible
 
-**Durée** : 3 h · **Slides** : [slides.html](slides.html) · **Labs** : [1 uv](labs/lab-01-uv.md) · [2 DVC](labs/lab-02-dvc.md) · [3 MLflow](labs/lab-03-mlflow.md)
+**Durée** : 3 h · **Slides** : [slides.html](slides.html) · **Labs** : [1 uv](labs/lab-01-uv.md) · [2 DVC](labs/lab-02-dvc.md) · [3 MLflow](labs/lab-03-mlflow.md) · **Mémo** : [toutes les commandes de la séance](memo.md)
+
+**Terminal** : les commandes sont écrites pour Git Bash sous Windows (installé avec Git) et pour le terminal de macOS ou Linux.
 
 À la fin de la séance, votre modèle n'est plus « un notebook qui marche chez vous » mais un projet que n'importe qui (un collègue, un serveur, vous dans six mois) peut réinstaller, relancer et comparer.
 
@@ -79,7 +81,7 @@ Le projet fil rouge contient un `.gitignore` complet à copier : [projet-fil-rou
 ### Les commandes
 
 ```bash
-uv init mon-projet            # nouveau projet (pyproject.toml, .python-version, README)
+uv init --package --python 3.11 mon-projet   # nouveau projet : pyproject.toml, src/, .python-version, dépôt Git
 cd mon-projet
 uv add pandas scikit-learn    # ajoute une dépendance, met à jour uv.lock, installe
 uv add --dev pytest ruff      # dépendance de développement (groupe dev)
@@ -97,11 +99,20 @@ uvx ruff check .              # lance un outil sans l'installer dans le projet
 
 ### Dans le projet fil rouge
 
-Le [pyproject.toml](../projet-fil-rouge/pyproject.toml) du fil rouge sépare les dépendances en groupes : le cœur (pandas, scikit-learn), `api` (FastAPI), `app` (Streamlit), `mlops` (MLflow, DVC) et `dev` (pytest, ruff). `uv sync` installe tout ; les images Docker de la séance 2 n'installeront que le groupe dont elles ont besoin.
+Le [pyproject.toml](../projet-fil-rouge/pyproject.toml) du fil rouge sépare les dépendances en groupes : le cœur (pandas, scikit-learn), `api` (FastAPI), `app` (Streamlit), `mlops` (MLflow, DVC) et `dev` (pytest, ruff). Les images Docker de la séance 2 n'installeront que le groupe dont elles ont besoin.
+
+Attention : par défaut, `uv sync` n'installe que le groupe `dev` et **désinstalle les autres**. Pour que `uv sync` installe tous les groupes pendant le développement, le fil rouge déclare :
+
+```toml
+[tool.uv]
+default-groups = ["api", "app", "mlops", "dev"]   # ou simplement : default-groups = "all"
+```
 
 ### Pièges fréquents
 
 - `ModuleNotFoundError` alors que la bibliothèque est « installée » : vous avez lancé `python` au lieu de `uv run python` (mauvais environnement).
+- `dvc: command not found` juste après un `uv sync` : le groupe `mlops` a été désinstallé, faute de `default-groups`.
+- `requires-python` incompatible avec la version demandée : le projet a été créé sans `--python 3.11` et uv a pris la version la plus récente de votre machine.
 - Un `uv.lock` en conflit lors d'un merge : lancez `uv lock` pour le régénérer, puis commitez.
 - `uv sync` recrée `.venv` si vous changez de version de Python : normal, c'est rapide.
 
@@ -116,7 +127,8 @@ Git est fait pour du texte de quelques Ko. Un CSV de 500 Mo ou un modèle de 2 G
 ### Versionner un fichier
 
 ```bash
-uv run dvc init --subdir         # dans un sous-dossier d'un dépôt Git (sinon : dvc init)
+uv run dvc init                  # (dvc init --subdir si le projet est un sous-dossier d'un dépôt Git)
+git rm --cached data/raw/gros_fichier.csv   # seulement si Git suivait déjà le fichier
 uv run dvc add data/raw/gros_fichier.csv
 #   -> crée gros_fichier.csv.dvc (le pointeur) et ajoute le fichier au .gitignore
 git add data/raw/gros_fichier.csv.dvc data/raw/.gitignore
@@ -126,6 +138,8 @@ uv run dvc remote add -d partage ../dvc-remote     # un dossier local pour comme
 uv run dvc push                                     # envoie le contenu vers le remote
 uv run dvc pull                                     # (sur une autre machine) le récupère
 ```
+
+Un fichier est suivi **soit** par Git, **soit** par DVC. S'il était déjà commité, `dvc add` refuse (`already tracked by SCM`) : on le retire d'abord de Git avec `git rm --cached`, qui ne supprime pas le fichier du disque.
 
 Pour un remote Azure Blob (★★, séance 3) : `uv add "dvc[azure]"`, puis `dvc remote add -d azure azure://conteneur/dossier` et `dvc remote modify --local azure connection_string "..."` (l'option `--local` garde le secret hors de Git).
 
@@ -188,9 +202,14 @@ with mlflow.start_run(run_name="random_forest") as run:
     mlflow.log_params({"n_estimators": 200, "max_depth": 6})
     pipe, metrics = fit(train_df, params)
     mlflow.log_metrics(metrics)                       # cv_accuracy, cv_roc_auc, …
-    mlflow.sklearn.log_model(pipe, name="model", input_example=example)
+    mlflow.sklearn.log_model(
+        pipe, name="model", input_example=example,
+        serialization_format=mlflow.sklearn.SERIALIZATION_FORMAT_CLOUDPICKLE,
+    )
     print(run.info.run_id)                            # identifiant unique du run
 ```
+
+L'option `serialization_format` est indispensable avec les versions récentes de MLflow (3.x) : leur format par défaut, *skops*, refuse par sécurité les arbres de décision d'une forêt aléatoire, et l'entraînement plante sur `untrusted types`. Le format *cloudpickle* convient pour un modèle que vous avez entraîné vous-même.
 
 Avec `mlflow.sklearn.autolog()` avant l'entraînement, MLflow enregistre seul les hyperparamètres et les métriques de scikit-learn : pratique pour démarrer, moins lisible qu'un log explicite.
 
@@ -209,8 +228,11 @@ Quand un run est bon, on l'enregistre sous un nom et une version : `diabetes-ris
 
 ```bash
 uv run python -c "import mlflow; mlflow.set_tracking_uri('sqlite:///mlflow.db'); print(mlflow.register_model('runs:/<RUN_ID>/model', 'diabetes-risk'))"
-uv run mlflow models serve -m "models:/diabetes-risk/1" -p 5001 --no-conda   # serveur de prédiction clé en main
+export MLFLOW_TRACKING_URI=sqlite:///mlflow.db
+uv run mlflow models serve -m "models:/diabetes-risk/1" -p 5001 --env-manager local   # serveur de prédiction clé en main
 ```
+
+`--env-manager local` sert le modèle avec l'environnement Python courant, au lieu d'en reconstruire un.
 
 Le registre demande un backend base de données (`sqlite:///mlflow.db` suffit en local) ; un simple dossier `mlruns/` ne le supporte pas.
 
@@ -231,7 +253,20 @@ Les deux se complètent : DVC rend l'exécution reproductible, MLflow la rend co
 - `uv run` partout, `dvc repro` pour régénérer, `mlflow ui` pour comparer.
 - Rien de lourd ni de secret dans Git : les données vont dans un remote DVC, les clés dans `.env`.
 
-**Devoir pour la séance 2** : prendre votre propre notebook (ou garder le fil rouge) et le mettre au format du projet : `uv init`, le code d'entraînement dans `src/`, un `params.yaml`, un `dvc.yaml` avec au moins deux étapes, et un run MLflow. La séance 2 construira l'API et le site web par-dessus.
+**Devoir pour la séance 2** : prendre votre propre notebook (ou garder le projet `diabete-lab` des labs) et le mettre au format du projet : `uv init --package --python 3.11`, le code d'entraînement dans `src/`, un `params.yaml`, un `dvc.yaml` avec au moins deux étapes, et un run MLflow. La séance 2 construira l'API et le site web par-dessus. Gardez votre projet `diabete-lab` : les labs de la séance 2 partent de lui.
+
+## 7. Auto-évaluation
+
+Répondez sans regarder le cours ; les réponses sont publiées avec les solutions des labs.
+
+1. Quelle est la différence entre `pyproject.toml` et `uv.lock` ? Lequel des deux garantit qu'un collègue obtient exactement les mêmes versions ?
+2. Pourquoi ne commite-t-on jamais le dossier `.venv` ?
+3. Vous lancez `python train.py` et obtenez `ModuleNotFoundError: No module named 'pandas'`, alors que `uv add pandas` a réussi. Que s'est-il passé ?
+4. Que contient le fichier `data/raw/diabetes.csv.dvc`, et où se trouve le contenu réel du CSV ?
+5. Vous modifiez `max_depth` dans `params.yaml`. Quelles étapes `dvc repro` relance-t-il, et comment le sait-il ?
+6. Pourquoi déclare-t-on `cache: false` sur `reports/metrics.json` ?
+7. Deux runs MLflow donnent 0,734 et 0,740 d'accuracy sur 154 patientes. Peut-on affirmer que le second modèle est meilleur ?
+8. À quoi sert le registre de modèles, alors que le fichier `models/model.joblib` existe déjà ?
 
 ## Pour aller plus loin (★★)
 

@@ -247,25 +247,69 @@ class Settings(BaseSettings):
   </div>
 </section>
 
+<section>
+  <p class="eyebrow">FastAPI · piège de production</p>
+  <h2>Préparer comme à l'entraînement</h2>
+  <div class="cols cols-12">
+    <div class="stack">
+      <p>Dans le jeu Pima, une insuline à <code>0</code> veut dire « inconnue ». À l'entraînement, <code>prepare.py</code> la remplace par une valeur manquante, que le pipeline impute.</p>
+      <div class="callout warn fragment"><i data-icon="warning"></i><p>Si l'API transmet le <code>0</code> tel quel, le modèle croit à une vraie insuline nulle. <strong>Aucune erreur, aucun journal</strong> : juste une estimation fausse.</p></div>
+    </div>
+    <div class="stack">
+      <table>
+        <thead><tr><th>Insuline</th><th>Préparation</th><th class="num">Probabilité</th></tr></thead>
+        <tbody>
+          <tr><td>120</td><td>—</td><td class="num">0,58</td></tr>
+          <tr class="fragment"><td>0 (inconnue)</td><td>même nettoyage qu'à l'entraînement</td><td class="num">0,61</td></tr>
+          <tr class="fragment"><td>0 (inconnue)</td><td>aucun nettoyage</td><td class="num"><strong class="c-err">0,35</strong></td></tr>
+        </tbody>
+      </table>
+      <div class="callout ok fragment"><i data-icon="check"></i><p>Le code de préparation est <strong>partagé</strong> : <code>predict.py</code> importe la liste des colonnes à nettoyer depuis <code>prepare.py</code>, et lit les colonnes attendues dans le modèle (<code>feature_names_in_</code>).</p></div>
+    </div>
+  </div>
+</section>
+
 <section class="lab" data-minutes="35">
   <p class="eyebrow alt">À vous de jouer · Lab 4</p>
   <h2>Servir le modèle avec FastAPI</h2>
   <div class="cols cols-21">
     <ol class="steps">
-      <li><strong>Installer</strong> <code>uv add --group api fastapi "uvicorn[standard]" pydantic-settings</code></li>
-      <li><strong>Une fonction de prédiction réutilisable</strong> <code>src/…/predict.py</code> avec une classe <code>Predictor</code></li>
-      <li><strong>Les schémas</strong> <code>PatientFeatures</code> avec bornes, <code>PredictionOut</code></li>
+      <li><strong>Installer</strong> <code>uv add --group api fastapi "uvicorn[standard]"</code>, <code>httpx</code> en dev</li>
+      <li><strong>Une prédiction réutilisable</strong> <code>predict.py</code>, même nettoyage qu'à l'entraînement → <code>0.5838</code></li>
+      <li><strong>Le contrat</strong> <code>PatientFeatures</code> avec bornes, <code>PredictionOut</code></li>
       <li><strong>L'application</strong> <code>lifespan</code>, <code>/health</code>, <code>/predict</code>, <code>503</code> si pas de modèle</li>
-      <li><strong>Lancer et explorer</strong> <code>/docs</code>, un âge négatif, un modèle renommé</li>
-      <li><strong>Tester</strong> trois tests avec <code>TestClient</code></li>
+      <li><strong>Lancer et explorer</strong> <code>/docs</code>, un âge négatif (<code>422</code>), <code>MODEL_PATH=absent.joblib</code></li>
+      <li><strong>Tester</strong> trois tests avec <code>TestClient</code>, puis commit</li>
     </ol>
     <div class="card accent">
-      <h3><i data-icon="terminal"></i> Démarrage</h3>
-      <pre><code class="language-bash" data-trim>uv add --group api fastapi "uvicorn[standard]" pydantic-settings
+      <h3><i data-icon="terminal"></i> Démarrage (Git Bash)</h3>
+      <pre><code class="language-bash" data-trim>git checkout -- . &amp;&amp; uv run dvc checkout
+uv add --group api fastapi "uvicorn[standard]"
 uv add --dev httpx
 uv run uvicorn api.main:app --reload</code></pre>
-      <p><span class="badge">★ étapes 1 à 6</span> <span class="badge alt">★★ /model, seuil, lot</span></p>
+      <p><span class="badge">★ étapes 1 à 6</span> <span class="badge alt">★★ /model, seuil, lot, test du 503</span></p>
       <p class="small">Guide détaillé : <code>labs/lab-04-fastapi.md</code></p>
+    </div>
+  </div>
+</section>
+
+<section class="debrief">
+  <p class="eyebrow ok">Lab 4 · À retenir</p>
+  <h2>Ce qu'il faut retenir</h2>
+  <div class="cols cols-21">
+    <ul class="takeaways">
+      <li><i data-icon="check"></i><span><strong>Une API est un contrat</strong> : Pydantic valide l'entrée et documente la sortie ; une requête invalide reçoit un <code>422</code> sans toucher au modèle.</span></li>
+      <li><i data-icon="check"></i><span><strong>Le modèle se charge une fois, au démarrage</strong> (<code>lifespan</code>), pas à chaque requête.</span></li>
+      <li><i data-icon="check"></i><span><strong>Même préparation qu'à l'entraînement</strong>, sinon le modèle se trompe en silence : 0,61 devient 0,35.</span></li>
+      <li><i data-icon="check"></i><span><strong>Des codes de statut honnêtes</strong> : <code>/health</code> pour la supervision, <code>503</code> quand le service n'est pas prêt, et des tests qui le prouvent.</span></li>
+    </ul>
+    <div class="card soft">
+      <h3><i data-icon="terminal"></i> Commandes clés</h3>
+      <pre><code class="language-bash" data-trim>uv run uvicorn api.main:app --reload
+curl http://localhost:8000/health
+MODEL_PATH=absent.joblib uv run uvicorn api.main:app
+uv run pytest</code></pre>
+      <p class="small"><strong>Réussi si</strong> <code>/predict</code> renvoie <code>{"prediction":1,"probability":0.5838}</code> et <code>3 passed</code>.</p>
     </div>
   </div>
 </section>
@@ -284,25 +328,27 @@ uv run uvicorn api.main:app --reload</code></pre>
   <p class="eyebrow">Streamlit</p>
   <h2>Le principe</h2>
   <div class="cols cols-21">
-    <pre data-title="app/streamlit_app.py (extrait)"><code class="language-python" data-trim data-line-numbers="1-3|5-6|8-10|12-16">import httpx, streamlit as st
-API_URL = os.getenv("API_URL", "")
-st.title("Estimation du risque de diabète")
-
-col1, col2 = st.columns(2)
-glucose = col1.slider("Glycémie (mg/dL)", 40, 250, 120, key="glucose")
+    <pre data-title="app/streamlit_app.py (extrait)"><code class="language-python" data-trim data-line-numbers="1-2|4-6|8-15|17-18">API_URL = os.getenv("API_URL", "").rstrip("/")
+values = {"glucose": col2.slider("Glycémie à 2 h (mg/dL)", 40, 250, 138), …}
 
 @st.cache_resource
-def load_predictor():
-    return Predictor(os.getenv("MODEL_PATH", "models/model.joblib"))
+def load_predictor() -> Predictor:
+    return Predictor(MODEL_PATH)
 
 if st.button("Estimer le risque", type="primary"):
-    if API_URL:
-        result = httpx.post(f"{API_URL}/predict", json=features, timeout=20).json()
-    else:
-        result = load_predictor().predict_one(features)
-    st.metric("Probabilité estimée", f"{result['probability']:.0%}")</code></pre>
+    try:
+        if API_URL:
+            r = httpx.post(f"{API_URL}/predict", json=values, timeout=20)
+            st.session_state["result"] = r.json()
+        else:
+            st.session_state["result"] = load_predictor().predict_one(values)
+    except Exception as exc:
+        st.error(f"La prédiction a échoué : {exc}")
+
+if "result" in st.session_state:
+    st.metric("Probabilité estimée", f"{st.session_state['result']['probability']:.0%}")</code></pre>
     <div class="stack">
-      <div class="callout"><i data-icon="refresh"></i><p>Le script <strong>se réexécute à chaque interaction</strong>. Tout ce qui coûte (charger un modèle) va dans <code>@st.cache_resource</code>.</p></div>
+      <div class="callout"><i data-icon="refresh"></i><p>Le script <strong>se réexécute à chaque interaction</strong>. Ce qui coûte va dans <code>@st.cache_resource</code> ; ce qui doit survivre (le résultat) va dans <code>st.session_state</code>.</p></div>
       <div class="callout fragment"><i data-icon="gear"></i><p>Le <strong>mode</strong> (local ou API) est de la configuration : <code>API_URL</code> vide ou non. Même application sur Streamlit Cloud et derrière Azure.</p></div>
       <div class="callout warn fragment"><i data-icon="warning"></i><p>Un <code>try/except</code> autour de l'appel réseau : l'API peut être arrêtée, lente, ou répondre <code>503</code>.</p></div>
     </div>
@@ -323,14 +369,12 @@ if st.button("Estimer le risque", type="primary"):
     <div class="card accent">
       <h3><i data-icon="api"></i> Mode API</h3>
       <p>L'application appelle l'API. Deux services, deux cycles de vie.</p>
-      <pre><code class="language-bash" data-trim># bash
-API_URL=http://localhost:8000 uv run streamlit run app/streamlit_app.py
-# PowerShell
-$env:API_URL="http://localhost:8000"; uv run streamlit run app/streamlit_app.py</code></pre>
+      <pre><code class="language-bash" data-trim># .env (ignoré par Git), lu au démarrage
+API_URL=http://localhost:8000</code></pre>
       <p class="small">Séance 3 : API sur Azure Container Apps, interface sur Streamlit Cloud.</p>
     </div>
   </div>
-  <p class="small mt fragment">Un fichier <code>.env</code> (ignoré par Git) et <code>load_dotenv()</code> évitent d'exporter la variable à chaque fois.</p>
+  <p class="small mt fragment"><code>load_dotenv()</code> lit le fichier <code>.env</code> au démarrage : relancez Streamlit après l'avoir modifié.</p>
 </section>
 
 <section class="lab" data-minutes="25">
@@ -339,16 +383,36 @@ $env:API_URL="http://localhost:8000"; uv run streamlit run app/streamlit_app.py<
   <div class="cols cols-21">
     <ol class="steps">
       <li><strong>Installer</strong> <code>uv add --group app streamlit httpx python-dotenv</code></li>
-      <li><strong>Le formulaire</strong> huit sliders, un bouton, un <code>st.metric</code> et une barre de progression</li>
-      <li><strong>Les deux modes</strong> lancer sans puis avec <code>API_URL</code> ; arrêter l'API et observer l'erreur</li>
-      <li><strong>Un fichier <code>.env</code></strong> plutôt que des variables à la main</li>
+      <li><strong>Le formulaire</strong> huit curseurs, un bouton, le résultat gardé dans <code>st.session_state</code></li>
+      <li><strong>Mode local</strong> <code>Probabilité estimée 58%</code></li>
+      <li><strong>Mode API</strong> <code>.env</code> avec <code>API_URL</code>, même <code>58%</code> ; arrêter l'API et observer l'erreur</li>
     </ol>
     <div class="card accent">
-      <h3><i data-icon="terminal"></i> Démarrage</h3>
+      <h3><i data-icon="terminal"></i> Démarrage (Git Bash)</h3>
       <pre><code class="language-bash" data-trim>uv add --group app streamlit httpx python-dotenv
 uv run streamlit run app/streamlit_app.py</code></pre>
-      <p><span class="badge">★ étapes 1 à 4</span> <span class="badge alt">★★ état de l'API, exemples, historique</span></p>
+      <p><span class="badge">★ étapes 1 à 4</span> <span class="badge alt">★★ test AppTest, état de l'API, exemples</span></p>
       <p class="small">Guide détaillé : <code>labs/lab-05-streamlit.md</code></p>
+    </div>
+  </div>
+</section>
+
+<section class="debrief">
+  <p class="eyebrow ok">Lab 5 · À retenir</p>
+  <h2>Ce qu'il faut retenir</h2>
+  <div class="cols cols-21">
+    <ul class="takeaways">
+      <li><i data-icon="check"></i><span><strong>Une interface, ce sont des widgets et un appel à une fonction de prédiction</strong> ; Streamlit en fait une page web en Python.</span></li>
+      <li><i data-icon="check"></i><span><strong>Le script se réexécute à chaque interaction</strong> : on met en cache ce qui coûte et on garde l'état dans <code>st.session_state</code>.</span></li>
+      <li><i data-icon="check"></i><span><strong>Le mode local ou API est de la configuration</strong> (<code>API_URL</code>), pas du code.</span></li>
+      <li><i data-icon="check"></i><span><strong>Tout appel réseau peut échouer</strong> : <code>try/except</code>, délai d'attente et message lisible.</span></li>
+    </ul>
+    <div class="card soft">
+      <h3><i data-icon="terminal"></i> Commandes clés</h3>
+      <pre><code class="language-bash" data-trim>uv run streamlit run app/streamlit_app.py
+echo "API_URL=http://localhost:8000" > .env
+uv run uvicorn api.main:app   # autre terminal</code></pre>
+      <p class="small"><strong>Réussi si</strong> les deux modes affichent <code>58%</code>, et qu'une API arrêtée donne un message d'erreur, pas une page plantée.</p>
     </div>
   </div>
 </section>
@@ -483,18 +547,42 @@ docker compose down</code></pre>
   <div class="cols cols-21">
     <ol class="steps">
       <li><strong>Un premier conteneur</strong> <code>docker run --rm -p 8080:80 nginx:alpine</code></li>
-      <li><strong>Le Dockerfile de l'API</strong> et un <code>.dockerignore</code></li>
-      <li><strong>Construire et lancer</strong> <code>docker build</code>, <code>docker run</code>, <code>/docs</code> depuis le conteneur, <code>whoami</code> dedans</li>
-      <li><strong>Le cache de couches</strong> modifier le code, puis <code>pyproject.toml</code> : comparer</li>
+      <li><strong>Le Dockerfile de l'API</strong> (votre version de uv dans le <code>FROM</code>) et un <code>.dockerignore</code></li>
+      <li><strong>Construire et lancer</strong> environ 700 Mo, <code>/health</code> depuis le conteneur, <code>whoami</code> → <code>appuser</code></li>
+      <li><strong>Le cache de couches</strong> modifier le code, puis une dépendance : comparer</li>
+      <li><strong>L'image de l'interface</strong> groupe <code>app</code>, port 8501</li>
       <li><strong>Docker Compose</strong> API + interface, <code>API_URL=http://api:8000</code></li>
     </ol>
     <div class="card accent">
-      <h3><i data-icon="terminal"></i> Démarrage</h3>
-      <pre><code class="language-bash" data-trim>uv run dvc repro
+      <h3><i data-icon="terminal"></i> Démarrage (Git Bash)</h3>
+      <pre><code class="language-bash" data-trim>uv --version
 docker build -f docker/api.Dockerfile -t diabete-api .
-docker run --rm -p 8000:8000 diabete-api</code></pre>
-      <p><span class="badge">★ étapes 1 à 5</span> <span class="badge alt">★★ healthcheck, MLflow, taille</span></p>
+docker run --rm -d -p 8000:8000 --name api-test diabete-api
+curl http://localhost:8000/health</code></pre>
+      <p><span class="badge">★ étapes 1 à 6</span> <span class="badge alt">★★ healthcheck, MLflow, taille, THRESHOLD</span></p>
       <p class="small">Guide détaillé : <code>labs/lab-06-docker.md</code></p>
+    </div>
+  </div>
+</section>
+
+<section class="debrief">
+  <p class="eyebrow ok">Lab 6 · À retenir</p>
+  <h2>Ce qu'il faut retenir</h2>
+  <div class="cols cols-21">
+    <ul class="takeaways">
+      <li><i data-icon="check"></i><span><strong>Une image est un environnement complet et figé</strong> : système, Python, bibliothèques, code et modèle.</span></li>
+      <li><i data-icon="check"></i><span><strong>Deux étapes</strong> : on construit avec uv, on livre une image sans uv ni sources, avec un utilisateur non root.</span></li>
+      <li><i data-icon="check"></i><span><strong>L'ordre des <code>COPY</code> fait le cache</strong> : dépendances d'abord, code ensuite.</span></li>
+      <li><i data-icon="check"></i><span><strong>Compose décrit plusieurs services et leur réseau</strong> : chaque service est joignable par son nom.</span></li>
+    </ul>
+    <div class="card soft">
+      <h3><i data-icon="terminal"></i> Commandes clés</h3>
+      <pre><code class="language-bash" data-trim>docker build -f docker/api.Dockerfile -t diabete-api .
+docker run --rm -d -p 8000:8000 --name api-test diabete-api
+docker exec api-test whoami
+docker compose up --build -d
+docker compose down</code></pre>
+      <p class="small"><strong>Réussi si</strong> l'interface en conteneur affiche <code>58%</code> en « Mode API · http://api:8000 ».</p>
     </div>
   </div>
 </section>
@@ -514,11 +602,11 @@ docker run --rm -p 8000:8000 diabete-api</code></pre>
   <h2>L'idée</h2>
   <div class="pipeline" data-start="1" data-steps='[
     {"label":"git push","sub":"vous","icon":"user","kind":"user","edge":"on: push"},
-    {"label":"ruff","sub":"style, erreurs","icon":"check","kind":"code","state":"done","edge":"ok"},
-    {"label":"pytest","sub":"17 tests","icon":"flask","kind":"code","state":"done","edge":"needs"},
+    {"label":"données","sub":"CSV public","icon":"database","kind":"data","state":"done","edge":"md5 ok"},
     {"label":"dvc repro","sub":"modèle","icon":"gear","kind":"code","state":"done","edge":"models/"},
+    {"label":"ruff, pytest","sub":"style, tests","icon":"flask","kind":"code","state":"done","edge":"needs"},
     {"label":"docker build","sub":"api.Dockerfile","icon":"layers","kind":"infra","state":"running","edge":"image"},
-    {"label":"ghcr.io","sub":"api:latest","icon":"package","kind":"infra","state":"todo"}]'></div>
+    {"label":"ghcr.io","sub":"latest + SHA","icon":"package","kind":"infra","state":"todo"}]'></div>
   <div class="cols cols-3 mt">
     <div class="card fragment"><h3><i data-icon="server"></i> Une machine neuve</h3><p>Ubuntu, rien d'installé : si ça ne marche que chez vous, la CI le dit.</p></div>
     <div class="card fragment"><h3><i data-icon="cross"></i> Une étape échoue</h3><p>Les suivantes ne s'exécutent pas, vous êtes prévenu, la croix rouge est visible sur la pull request.</p></div>
@@ -529,7 +617,7 @@ docker run --rm -p 8000:8000 diabete-api</code></pre>
 <section>
   <p class="eyebrow">Intégration continue · projet fil rouge</p>
   <h2>Le workflow</h2>
-  <pre data-title=".github/workflows/ci.yml (simplifié)"><code class="language-yaml" data-trim data-line-numbers="1-4|6-14|16-19|20-26">name: CI
+  <pre data-title=".github/workflows/ci.yml (simplifié)"><code class="language-yaml" data-trim data-line-numbers="1-4|6-14|16-19|20-29">name: CI
 on:
   push: { branches: [main] }
   pull_request:
@@ -554,8 +642,11 @@ jobs:
       - run: uv sync --frozen &amp;&amp; uv run dvc repro
       - uses: docker/login-action@v3
         with: { registry: ghcr.io, username: ${{ github.actor }}, password: ${{ secrets.GITHUB_TOKEN }} }
+      - id: meta
+        uses: docker/metadata-action@v5          # nom en minuscules, tags latest + SHA
+        with: { images: "ghcr.io/${{ github.repository }}/api" }
       - uses: docker/build-push-action@v6
-        with: { context: ., file: docker/api.Dockerfile, push: true, tags: ghcr.io/${{ github.repository }}/api:latest }</code></pre>
+        with: { context: ., file: docker/api.Dockerfile, push: true, tags: "${{ steps.meta.outputs.tags }}" }</code></pre>
 </section>
 
 <section>
@@ -564,8 +655,9 @@ jobs:
   <div class="stack">
     <div class="callout fragment"><i data-icon="lock"></i><p><strong><code>uv sync --frozen</code></strong> : la CI installe exactement <code>uv.lock</code>. Lock pas à jour → échec, au lieu de résoudre autre chose en silence.</p></div>
     <div class="callout fragment"><i data-icon="branch"></i><p><strong><code>needs: qualite</code></strong> : pas d'image si les tests échouent.</p></div>
-    <div class="callout fragment"><i data-icon="gear"></i><p><strong><code>dvc repro</code> dans la CI</strong> : le modèle est régénéré par le pipeline, donc toujours cohérent avec le code. Avec un remote DVC, on ferait <code>dvc pull</code>.</p></div>
-    <div class="callout ok fragment"><i data-icon="package"></i><p><strong><code>ghcr.io/&lt;vous&gt;/&lt;depot&gt;/api:latest</code></strong> : GitHub Container Registry, gratuit, authentifié par le jeton automatique. C'est l'image que la séance 3 déploiera.</p></div>
+    <div class="callout fragment"><i data-icon="gear"></i><p><strong><code>dvc repro</code> dans la CI</strong> : le modèle est régénéré par le pipeline, donc toujours cohérent avec le code.</p></div>
+    <div class="callout warn fragment"><i data-icon="database"></i><p><strong>La CI n'a accès qu'au dépôt.</strong> Votre remote DVC est sur votre disque : la CI télécharge les données publiques du jeu Pima (même empreinte md5). Avec un remote cloud, ce sera un <code>dvc pull</code>.</p></div>
+    <div class="callout ok fragment"><i data-icon="package"></i><p><strong><code>ghcr.io/&lt;vous-en-minuscules&gt;/&lt;depot&gt;/api</code></strong> : un nom d'image Docker est en minuscules, <code>metadata-action</code> s'en charge. C'est l'image que la séance 3 déploiera.</p></div>
   </div>
 </section>
 
@@ -574,18 +666,41 @@ jobs:
   <h2>Intégration continue avec GitHub Actions</h2>
   <div class="cols cols-21">
     <ol class="steps">
-      <li><strong>Le workflow minimal</strong> job <code>qualite</code> : uv, ruff, pytest ; push ; onglet Actions</li>
-      <li><strong>Faire échouer, puis réparer</strong> une erreur volontaire, la croix rouge, la coche verte</li>
-      <li><strong>Construire et publier l'image</strong> job <code>image</code> avec <code>needs</code>, login ghcr.io, build-push</li>
-      <li><strong>Récupérer l'image</strong> rendre le package public, <code>docker pull</code>, <code>docker run</code></li>
+      <li><strong>Code au propre</strong> <code>ruff format</code>, <code>ruff check --fix</code>, commit</li>
+      <li><strong>Publier sur GitHub</strong> dépôt public <code>diabete-lab</code>, <code>git push</code></li>
+      <li><strong>Le workflow</strong> données publiques, <code>dvc repro</code>, ruff, pytest, puis l'image</li>
+      <li><strong>Faire échouer, puis réparer</strong> la croix rouge, la coche verte</li>
+      <li><strong>Récupérer l'image</strong> la rendre publique, <code>docker pull</code> en minuscules, <code>/health</code></li>
     </ol>
     <div class="card accent">
-      <h3><i data-icon="terminal"></i> Démarrage</h3>
-      <pre><code class="language-bash" data-trim>mkdir -p .github/workflows
-# créer ci.yml (voir le guide)
-git add . &amp;&amp; git commit -m "CI" &amp;&amp; git push</code></pre>
-      <p><span class="badge">★ étapes 1 à 4</span> <span class="badge alt">★★ badge, tags, cache, protection de main</span></p>
+      <h3><i data-icon="terminal"></i> Démarrage (Git Bash)</h3>
+      <pre><code class="language-bash" data-trim>uv run ruff format . &amp;&amp; uv run ruff check --fix .
+git commit -am "Mise en forme ruff"
+gh repo create diabete-lab --public --source . --push
+# créer .github/workflows/ci.yml (voir le guide)</code></pre>
+      <p><span class="badge">★ étapes 1 à 5</span> <span class="badge alt">★★ badge, cache, protection de main</span></p>
       <p class="small">Guide détaillé : <code>labs/lab-07-ci.md</code></p>
+    </div>
+  </div>
+</section>
+
+<section class="debrief">
+  <p class="eyebrow ok">Lab 7 · À retenir</p>
+  <h2>Ce qu'il faut retenir</h2>
+  <div class="cols cols-21">
+    <ul class="takeaways">
+      <li><i data-icon="check"></i><span><strong>La CI rejoue sur une machine neuve</strong> ce que vous faites à la main : si ça ne marche que chez vous, elle le dit.</span></li>
+      <li><i data-icon="check"></i><span><strong>Chaque étape conditionne la suivante</strong> : pas d'image sans tests verts, pas de tests sans modèle régénéré.</span></li>
+      <li><i data-icon="check"></i><span><strong>La CI n'a accès qu'au dépôt et à ce qu'on lui donne</strong> : données publiques ici, secrets ou remote cloud ensuite.</span></li>
+      <li><i data-icon="check"></i><span><strong>L'image publiée est l'artefact qu'on déploie</strong>, avec un tag immuable (le SHA) en plus de <code>latest</code>.</span></li>
+    </ul>
+    <div class="card soft">
+      <h3><i data-icon="terminal"></i> Commandes clés</h3>
+      <pre><code class="language-bash" data-trim>git push                       # déclenche la CI
+docker pull ghcr.io/&lt;compte&gt;/diabete-lab/api:latest
+docker run --rm -d -p 8000:8000 --name api-ci \
+  ghcr.io/&lt;compte&gt;/diabete-lab/api:latest</code></pre>
+      <p class="small"><strong>Réussi si</strong> les deux jobs sont verts, le journal affiche <code>accuracy=0.734</code>, et l'image tirée répond <code>ok</code>.</p>
     </div>
   </div>
 </section>
@@ -601,6 +716,22 @@ git add . &amp;&amp; git commit -m "CI" &amp;&amp; git push</code></pre>
     <div class="card fragment" data-kind="code"><h3><i data-icon="check"></i> GitHub Actions</h3><p>Rejoue lint, tests, entraînement et construction à chaque push, publie l'image.</p></div>
   </div>
   <div class="callout ok mt fragment"><i data-icon="check"></i><p>Vous avez maintenant un <strong>artefact déployable</strong> : une image Docker testée, publiée, configurable par l'environnement. La séance 3 la met en ligne.</p></div>
+</section>
+
+<section class="quiz">
+  <p class="eyebrow">Auto-évaluation</p>
+  <h2>Huit questions pour vérifier</h2>
+  <ol class="quiz-list">
+    <li>Pourquoi charger le modèle dans <code>lifespan</code> plutôt que dans <code>predict</code> ?</li>
+    <li><code>"age": -3</code> : quel code de statut, produit par quelle ligne ?</li>
+    <li>Pourquoi <code>503</code> plutôt que <code>500</code> quand le modèle est absent ?</li>
+    <li>L'API transmet une insuline à 0 telle quelle. Qu'arrive-t-il ?</li>
+    <li>Pourquoi ranger le résultat dans <code>st.session_state</code> ?</li>
+    <li>Pourquoi copier <code>pyproject.toml</code> et <code>uv.lock</code> avant le code dans le Dockerfile ?</li>
+    <li><code>http://api:8000</code> dans Compose, <code>localhost:8000</code> dans le navigateur : pourquoi ?</li>
+    <li>Pourquoi la CI ne peut-elle pas faire <code>dvc pull</code>, et comment le lab 7 s'en passe-t-il ?</li>
+  </ol>
+  <p class="small mt">Mémo des commandes : <code>seance-2-application-web/memo.md</code> · Réponses publiées avec les solutions des labs.</p>
 </section>
 
 <section>

@@ -47,7 +47,7 @@ API_URL = setting("API_URL").rstrip("/")
 MODEL_PATH = setting("MODEL_PATH", str(ROOT / "models" / "model.joblib"))
 MODEL_URL = setting("MODEL_URL")
 GEMINI_API_KEY = setting("GEMINI_API_KEY")
-GEMINI_MODEL = setting("GEMINI_MODEL", "gemini-2.5-flash")
+GEMINI_MODEL = setting("GEMINI_MODEL", "gemini-flash-latest")
 
 # libellé, min, max, valeur par défaut, pas
 LABELS = {
